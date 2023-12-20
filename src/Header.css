@@ -1,0 +1,62 @@
+/* Header.css */
+
+.Main-div {
+    text-align: right;
+}
+
+.nav-text {
+    display: flex;
+    justify-content: flex-start;
+    padding-right:500px;
+    font-size:24px;
+    color:white;
+
+}
+.navbar {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 14px;
+    background-color: rgb(19, 19, 19);
+    height:70px;
+    align-items: center;
+}
+
+.nav-link {
+    margin-right: 10px;
+    text-decoration: none;
+    color: white;
+    font-family:'Times New Roman', Times, serif;
+    padding-right:10px;
+    
+}
+
+img {
+    height:30px;
+    width:30px;
+    padding-right:30px;
+}
+
+.bell-icon {
+    margin-left: 20px;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    color: ghostwhite;
+  }
+
+  .notification-popup {
+    position: absolute;
+    top: 60px; /* Adjust the top position to position it below the bell icon */
+    right: 200px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 999; /* Ensure it's above other elements */
+    /* Add any additional styles as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
