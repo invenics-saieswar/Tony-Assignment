@@ -1,0 +1,54 @@
+/* Assuming your new class names start with "skill-mapping" */
+
+.skill-mapping-container {
+    background-color: #fff;
+    padding: 30px;
+    max-width:400px;
+    margin-left:150px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 2px solid #4caf50;
+  }
+  
+  .skill-mapping-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .skill-mapping-label {
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  
+  .skill-mapping-input,
+  .skill-mapping-select,
+  .skill-mapping-textarea {
+    margin: 5px 0 15px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .skill-mapping-button {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .skill-mapping-button:hover {
+    background-color: #f30606;
+  }
+  
+  .skill-mapping-ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .skill-mapping-li {
+    margin: 10px 0;
+    border: 10px; /* This looks suspicious, please update this line as needed */
+  }
+  
