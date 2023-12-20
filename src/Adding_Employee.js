@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import './Adding_Employee.css';
 
-function EmpAdd({ addNotification }) {
+function EmpAdd() {
   const [employeeData, setEmployeeData] = useState({
     id: '',
     name: '',
@@ -14,6 +14,11 @@ function EmpAdd({ addNotification }) {
   const [nameError, setNameError] = useState('');
   const [idError, setIdError] = useState('');
   const [formError, setFormError] = useState('');
+
+   // State for managing success and error messages
+   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+   const [showErrorMessage, setShowErrorMessage] = useState(false);
+  
 
   const roles = ['Director', 'Manager', 'Analyst'];
   const departments = ['Automation', 'SAP', 'App Dev', 'Product'];
@@ -76,14 +81,18 @@ function EmpAdd({ addNotification }) {
 
       if (response.ok) {
         console.log('Email sent successfully!');
-        addNotification(`Employee added: ${employeeData.name}. Mail sent successfully!`, 'success');
+        showSuccess();
+        // Display success message  inside try
+       // addNotification(`Employee added: ${employeeData.name}. Mail sent successfully!`, 'success');
       } else {
         console.error('Failed to send email.');
-        addNotification('Failed to send mail', 'error');
+       // addNotification('Failed to send mail', 'error');
       }
     } catch (error) {
       console.error('Error sending email:', error);
-      addNotification('Failed to send mail', 'error');
+     // addNotification('Failed to send mail', 'error');
+     showError();
+     // Display error message inside catch
     }
 
     setShowSuccessMessages(true);
@@ -99,6 +108,22 @@ function EmpAdd({ addNotification }) {
     setIdError('');
     setFormError('');
   };
+
+    // Function to display success message
+    const showSuccess = () => {
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000); // Hide success message after 3 seconds
+    };
+   
+    // Function to display error message
+    const showError = () => {
+      setShowErrorMessage(true);
+      setTimeout(() => {
+        setShowErrorMessage(false);
+      }, 3000); // Hide error message after 3 seconds
+    };
 
   return (
     <div className="emp-add-container">
@@ -175,6 +200,17 @@ function EmpAdd({ addNotification }) {
       {showSuccessMessages && (
         <div className="emp-add-success-message">Employee details added successfully!</div>
       )}
+       {showSuccessMessage && (
+          <div className="message-popup success">
+            <p>Email sent successfully!</p>
+          </div>
+        )}
+ 
+        {showErrorMessage && (
+          <div className="message-popup error">
+            <p>Failed to send email.</p>
+          </div>
+        )}
     </div>
   );
 }
