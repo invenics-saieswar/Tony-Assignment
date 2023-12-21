@@ -8,6 +8,7 @@ import View_Employee from "./View_Employee";
 import Project from "./Project";
 import Assign_Project from "./Assign_Project";
 import Skill_Mapping from "./Skill_Mapping";
+import { NotificationProvider } from './NotificationContext';
 
 
 
@@ -17,6 +18,7 @@ const LandingPage = () => {
         setSelectedOption(option);
     };
     return (
+      <NotificationProvider>
     <div>
             <div className="Main">
       <div className="header-div"> 
@@ -39,7 +41,9 @@ const LandingPage = () => {
       </div>
     </div>
         </div>
+        </NotificationProvider>
     )
+ 
 }
 
 export default LandingPage;

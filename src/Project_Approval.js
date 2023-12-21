@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import './Project_Approval.css';
- 
+import { useNotification } from './NotificationContext';
+
 const Project_Approval = ({ projects }) => {
   const [selectedProjectForApproval, setSelectedProjectForApproval] = useState('');
   const [approvedMessage, setApprovedMessage] = useState('');
@@ -9,6 +10,8 @@ const Project_Approval = ({ projects }) => {
     // State for managing success and error messages
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+    const { addNotification } = useNotification();
  
   const handleApprove = (projectName) => {
     // Set the approved message
@@ -28,6 +31,7 @@ const Project_Approval = ({ projects }) => {
 
         if (response.ok) {
           console.log('Email sent successfully!');
+          addNotification('Project approved Mail sent');
           showSuccess();
           // Display success message  inside try
         } else {
@@ -35,6 +39,7 @@ const Project_Approval = ({ projects }) => {
         }
       } catch (error) {
         console.error('Error sending email:', error);
+        addNotification('Project approved Mail Failed to Sent');
         showError();
 // Display error message inside catch
       }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './View_Employee.css';
+import { useNotification } from './NotificationContext';
 
 function View_Employee() {
   // State declarations
@@ -17,6 +18,7 @@ function View_Employee() {
     // State for managing success and error messages
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
+    const { addNotification } = useNotification();
 
   // Function to handle employee deletion
   const handleDelete = async () => {
@@ -36,6 +38,7 @@ function View_Employee() {
       // Check response status for success/error handling
       if (response.ok) {
         console.log('Delete email sent successfully!');
+        addNotification('Employee Deleted successfully Mail sent');
         showSuccess();
 // Display success message  inside try
       } else {
@@ -43,6 +46,7 @@ function View_Employee() {
       }
     } catch (error) {
       console.error('Error sending delete email:', error);
+      addNotification('Employee Deleted successfully Mail Failed to sent');
       showError();
       // Display error message inside catch
     }
@@ -52,7 +56,7 @@ function View_Employee() {
     selectedRows.forEach((id) => {
       delete updatedData[id];
     });
-
+    
     setEmployeeData(updatedData);
     setSelectedRows([]);
   };
@@ -79,6 +83,7 @@ function View_Employee() {
       // Check response status for success/error handling
       if (response.ok) {
         console.log('Edit email sent successfully!');
+        addNotification('Employee Edited Successfully Mail Sent');
         showSuccess();
 // Display success message  inside try
       } else {
@@ -86,6 +91,7 @@ function View_Employee() {
       }
     } catch (error) {
       console.error('Error sending edit email:', error);
+      addNotification('Employee Edited successfully Mail Failed to sent');
       showError();
       // Display error message inside catch
     }

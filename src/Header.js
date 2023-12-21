@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaRegBell } from 'react-icons/fa';
 import './Header.css';
+import { useNotification } from './NotificationContext';
 
 const Header = () => {
   const [showNotification, setShowNotification] = useState(false);
   const toggleNotification = () => {
     setShowNotification(!showNotification);
   };
+  const { notificationMessages } = useNotification();
 
   const refreshPage = () => {
     window.location.reload();
@@ -20,8 +22,17 @@ const Header = () => {
         <FaRegBell className="bell-icon" onClick={toggleNotification} />
         {showNotification && (
           <div className="notification-popup">
-            {/* Your notification content goes here */}
-            Notification Message
+            {notificationMessages && notificationMessages.length > 0 ? (
+              <ul className="notification-list">
+                {notificationMessages.map((message, index) => (
+                  <li key={index} className="notification-item">
+                    {message}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div>No notifications</div>
+            )}
           </div>
         )}
         <Link to="/" className="nav-link" onClick={refreshPage}>Home</Link>

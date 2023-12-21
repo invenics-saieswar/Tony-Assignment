@@ -1,6 +1,7 @@
 //-----------------------------------
 import React, { useState } from 'react';
 import './Adding_Employee.css';
+import { useNotification } from './NotificationContext';
 
 function EmpAdd() {
   const [employeeData, setEmployeeData] = useState({
@@ -9,6 +10,7 @@ function EmpAdd() {
     role: '',
     department: '',
   });
+  const { addNotification } = useNotification();
 
   const [showSuccessMessages, setShowSuccessMessages] = useState(false);
   const [nameError, setNameError] = useState('');
@@ -81,6 +83,7 @@ function EmpAdd() {
 
       if (response.ok) {
         console.log('Email sent successfully!');
+        addNotification('Employee Added successfully Mail Sent');
         showSuccess();
         // Display success message  inside try
       
@@ -90,7 +93,7 @@ function EmpAdd() {
       }
     } catch (error) {
       console.error('Error sending email:', error);
-    
+      addNotification('Employee Added successfully Mail Failed to Sent');
      showError();
      // Display error message inside catch
     }
@@ -107,6 +110,7 @@ function EmpAdd() {
     setNameError('');
     setIdError('');
     setFormError('');
+   
   };
 
     // Function to display success message

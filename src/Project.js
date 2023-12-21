@@ -1,6 +1,7 @@
 // Import React and useState hook
 import React, { useState } from "react";
 import './Project.css';
+import { useNotification } from './NotificationContext';
 
 
 // Main Project component
@@ -21,6 +22,8 @@ function Project() {
       // State for managing success and error messages
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+  const { addNotification } = useNotification();
 
     const [errors, setErrors] = useState({
         projectNameError: "",
@@ -58,14 +61,14 @@ function Project() {
             });
         
             if (response.ok) {
-             
+                addNotification('Project Deleted successfully Mail Sent');
               showSuccess();
               // Display success message  inside try
             } else {
-              alert('Project updated successfully! Failed to send email.');
             }
           } catch (error) {
             console.error('Error:', error);
+            addNotification('Project Deleted successfully Mail Failed to Sent');
             showError();
             // Display error message inside catch
            
@@ -106,7 +109,7 @@ function Project() {
           });
       
           if (response.ok) {
-            alert('Project updated successfully! Email sent.');
+            addNotification('Project Edited successfully Mail Sent');
             showSuccess();
             // Display success message  inside try
           } else {
@@ -114,6 +117,7 @@ function Project() {
           }
         } catch (error) {
           console.error('Error:', error);
+          addNotification('Project Edited successfully Mail Failed to Sent');
           showError();
           // Display error message inside catch
         }
@@ -296,6 +300,7 @@ function Project() {
             });
 
             if (response.ok) {
+                addNotification('Project Created successfully Mail Sent');
                 showSuccess();
                 // Display success message  inside try
             } else {
@@ -303,6 +308,7 @@ function Project() {
             }
         } catch (error) {
             console.error('Error:', error);
+            addNotification('Project Created successfully Mail Failed to Sent');
             showError();
             // Display error message inside catch
         }

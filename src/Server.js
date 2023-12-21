@@ -89,12 +89,12 @@ app.post('/sendUpdateEmail', async (req, res) => {
   }
 });
 //-------------------------------------------------------------------------------------
-app.post('/sendDeleteEmaill', async (req, res) => {
-  const { id, email } = req.body;
+app.post('/sendDeleteEmail', async (req, res) => {
+  const { id} = req.body;
 
   const mailOptions = {
     from: 'karthi.blogger.avatar@gmail.com', // Replace with your email
-    to: email,
+    to: 'karthi.blogger.avatar@gmail.com',
     subject: 'Last Mail from the Company',
     html: `
       <p>This is your last email from the company.</p>

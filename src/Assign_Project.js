@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link,useNavigate } from 'react-router-dom';
 import { Container, Typography } from '@mui/material';
 import './Assign_Project.css';
+import { useNotification } from './NotificationContext';
 
 const Assign_Project = () => {
   const [empList] = useState([
@@ -18,6 +19,8 @@ const Assign_Project = () => {
     { id: 9, name: 'Emp 9', role: 'Developer', skills: ['Java', 'Spring'], assignedProjects: [] },
     { id: 10, name: 'Emp 10', role: 'Manager', skills: ['Angular'], assignedProjects: [] },
   ]);
+
+  const { addNotification } = useNotification();
  
   const [projects, setProjects] = useState([
     { id: 101, name: 'Project A', description: 'Description for Project A', department: 'IT', assignedEmps: [], approvalStatus: 'Pending' },
@@ -88,6 +91,8 @@ const Assign_Project = () => {
 
         if (response.ok) {
           console.log('Email sent successfully!');
+          
+    addNotification('Project Assigned successfully Mail Sent');
           showSuccess();
           // Display success message  inside try
         } else {
@@ -95,6 +100,8 @@ const Assign_Project = () => {
         }
       } catch (error) {
         console.error('Error sending email:', error);
+        
+    addNotification('Project Assigned successfully Mail Failed to Sent');
         showError();
         // Display error message inside catch
       }
