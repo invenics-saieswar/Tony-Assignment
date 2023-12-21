@@ -199,14 +199,15 @@ app.post('/sendCreateProject', async (req, res) => {
   }
 });
 //-------------------------------------------------------------------------------------
-app.post('/senddeleteProject', async (req, res) => {
-  const { projectId } = req.body;
+
+app.post('/sendDeleteProject', async (req, res) => {
+  const { body } = req.body;
 
       const mailOptions = {
           from: 'karthi.blogger.avatar@gmail.com',
           to: 'karthi.blogger.avatar@gmail.com',
-          subject: `Project with ID: ${projectId} had been deleted`,
-          text:'The project has been deleted from the database.'
+          subject: "This Project has been deleted",
+          text: body
       };
       try {
       await transporter.sendMail(mailOptions);
@@ -217,27 +218,21 @@ app.post('/senddeleteProject', async (req, res) => {
   }
 });
 //-------------------------------------------------------------------------------------
-app.post('/sendDeleteEmail', async (req, res) => {
-  const deletedEmployees = req.body.deletedEmployees;
+app.post('/sendEditProject', async (req, res) => {
+  const { body } = req.body;
 
-  const mailOptions = {
-    from: 'karthi.blogger.avatar@gmail.com',
-    to: 'karthi.blogger.avatar@gmail.com', // Replace with the recipient's email
-    subject: 'Employees Deleted',
-    html: `
-      <p>The following employees have been deleted:</p>
-      <ul>
-        ${deletedEmployees.map(employee => `<li>${employee.id} - ${employee.name}</li>`).join('')}
-      </ul>
-    `,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    res.status(200).send('Delete email sent successfully!');
+      const mailOptions = {
+          from: 'karthi.blogger.avatar@gmail.com',
+          to: 'karthi.blogger.avatar@gmail.com',
+          subject: "The project has been edited",
+          text: JSON.stringify(body)
+      };
+      try {
+      await transporter.sendMail(mailOptions);
+      res.status(200).send('Email sent successfully');
   } catch (error) {
-    console.error('Error sending delete email:', error);
-    res.status(500).send('Failed to send delete email.');
+      console.error('Error sending email:', error);
+      res.status(500).send('Failed to send email');
   }
 });
 

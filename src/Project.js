@@ -38,12 +38,31 @@ function Project() {
         }
     };
     // Function to delete selected projects
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async() => {
         const newList = projectsList.filter((project, index) => !selectedProjects.includes(index));
         setProjectsList(newList);
         setSelectedProjects([]);
+        //------------------------------------------------------------
+        try {
+            const response = await fetch('http://localhost:3001/sendEditProject', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(projectsList),
+            });
+        
+            if (response.ok) {
+              alert('Project updated successfully! Email sent.');
+            } else {
+              alert('Project updated successfully! Failed to send email.');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            alert('Project updated successfully! Failed to send email.');
+          }
+        //------------------------------------------------------------
     };
-
     const handleStartEditing = (index) => {
         setEditingIndex(index);
         const projectToEdit = projectsList[index];
@@ -54,20 +73,41 @@ function Project() {
     };
 
     // Function to save edits when editing a project
-    const handleSaveEditing = (index) => {
+    const handleSaveEditing = async (index) => {
         console.log(`Saving edits for project at index ${index}`);
         setEditingIndex(null);
-
+      
         const updatedList = projectsList.map((project, i) => {
-            if (i === index) {
-                return {
-                    ...project,
-                    ...projectData // Save changes from projectData to the project being edited
-                };
-            }
-            return project;
+          if (i === index) {
+            return {
+              ...project,
+              ...projectData // Save changes from projectData to the project being edited
+            };
+          }
+          return project;
         });
+      
+        try {
+          const response = await fetch('http://localhost:3001/sendEditProject', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedList[index]),
+          });
+      
+          if (response.ok) {
+            alert('Project updated successfully! Email sent.');
+          } else {
+            alert('Project updated successfully! Failed to send email.');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Project updated successfully! Failed to send email.');
+        }
+      
 
+       
         setProjectsList(updatedList);
     };
 
