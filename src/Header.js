@@ -17,6 +17,7 @@ const Header = () => {
       message,
       type,
     };
+    
 
     setNotifications([...notifications, newNotification]);
 
