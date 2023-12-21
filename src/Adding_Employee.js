@@ -83,14 +83,14 @@ function EmpAdd() {
         console.log('Email sent successfully!');
         showSuccess();
         // Display success message  inside try
-       // addNotification(`Employee added: ${employeeData.name}. Mail sent successfully!`, 'success');
+      
       } else {
         console.error('Failed to send email.');
-       // addNotification('Failed to send mail', 'error');
+     
       }
     } catch (error) {
       console.error('Error sending email:', error);
-     // addNotification('Failed to send mail', 'error');
+    
      showError();
      // Display error message inside catch
     }

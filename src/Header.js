@@ -5,30 +5,8 @@ import './Header.css';
 
 const Header = () => {
   const [showNotification, setShowNotification] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-
   const toggleNotification = () => {
     setShowNotification(!showNotification);
-  };
-
-  const addNotification = (message, type) => {
-    const newNotification = {
-      id: Date.now(),
-      message,
-      type,
-    };
-    
-
-    setNotifications([...notifications, newNotification]);
-
-    setTimeout(() => {
-      removeNotification(newNotification.id);
-    }, 5000);
-  };
-
-  const removeNotification = (id) => {
-    const updatedNotifications = notifications.filter((notification) => notification.id !== id);
-    setNotifications(updatedNotifications);
   };
 
   const refreshPage = () => {
