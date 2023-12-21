@@ -52,11 +52,26 @@ img {
     background-color: #fff;
     border: 1px solid #ccc;
     padding: 10px;
+    width: 300px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 999; /* Ensure it's above other elements */
     /* Add any additional styles as needed */
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column; /* Display messages in a column */
+    gap: 8px; /* Space between messages */
+    max-height: 200px; /* Limit height to show scrollbar if needed */
+    overflow-y:auto; /* Enable scrollbar when content exceeds max height */
+    overflow-x: hidden;
+}
+  
+  .notification-popup li {
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.3s; /* Smooth transition on hover */
+  }
+  
+  .notification-popup li:hover {
+    background-color: #e7dfdf; /* Change background color on hover */
+    cursor: pointer; /* Show pointer cursor on hover */
   }
   
