@@ -17,6 +17,11 @@ function Project() {
         skillsRequired: [],
         newSkill: ""
     });
+
+      // State for managing success and error messages
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
+
     const [errors, setErrors] = useState({
         projectNameError: "",
         projectIdError: "",
@@ -44,7 +49,7 @@ function Project() {
         setSelectedProjects([]);
         //------------------------------------------------------------
         try {
-            const response = await fetch('http://localhost:3001/sendEditProject', {
+            const response = await fetch('http://localhost:3001/sendDeleteProject', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -53,13 +58,17 @@ function Project() {
             });
         
             if (response.ok) {
-              alert('Project updated successfully! Email sent.');
+             
+              showSuccess();
+              // Display success message  inside try
             } else {
               alert('Project updated successfully! Failed to send email.');
             }
           } catch (error) {
             console.error('Error:', error);
-            alert('Project updated successfully! Failed to send email.');
+            showError();
+            // Display error message inside catch
+           
           }
         //------------------------------------------------------------
     };
@@ -98,18 +107,37 @@ function Project() {
       
           if (response.ok) {
             alert('Project updated successfully! Email sent.');
+            showSuccess();
+            // Display success message  inside try
           } else {
             alert('Project updated successfully! Failed to send email.');
           }
         } catch (error) {
           console.error('Error:', error);
-          alert('Project updated successfully! Failed to send email.');
+          showError();
+          // Display error message inside catch
         }
       
 
        
         setProjectsList(updatedList);
     };
+
+     // Function to display success message
+  const showSuccess = () => {
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000); // Hide success message after 3 seconds
+  };
+ 
+  // Function to display error message
+  const showError = () => {
+    setShowErrorMessage(true);
+    setTimeout(() => {
+      setShowErrorMessage(false);
+    }, 3000); // Hide error message after 3 seconds
+  };
 
     const handleEditInputChange = (e, index, fieldName) => {
         const updatedList = projectsList.map((project, i) => {
@@ -268,13 +296,15 @@ function Project() {
             });
 
             if (response.ok) {
-                alert('Project created successfully! Email sent.');
+                showSuccess();
+                // Display success message  inside try
             } else {
                 alert('Project created successfully! Failed to send email.');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Project created successfully! Failed to send email.');
+            showError();
+            // Display error message inside catch
         }
     };
 
@@ -485,6 +515,17 @@ function Project() {
                         </div>
                         <br />
                         <button onClick={handleCreateProject} className="create-button unique-create-button">Create Project</button>
+                        {showSuccessMessage && (
+          <div className="message-popup success">
+            <p>Email sent successfully!</p>
+          </div>
+        )}
+ 
+        {showErrorMessage && (
+          <div className="message-popup error">
+            <p>Failed to send email.</p>
+          </div>
+        )}
 
                     </div>
                 ); case "ListOfProjects":
@@ -597,6 +638,17 @@ function Project() {
                                 ))}
                             </tbody>
                         </table>
+                        {showSuccessMessage && (
+          <div className="message-popup success">
+            <p>Email sent successfully!</p>
+          </div>
+        )}
+ 
+        {showErrorMessage && (
+          <div className="message-popup error">
+            <p>Failed to send email.</p>
+          </div>
+        )}
                     </div>
                 );
 
