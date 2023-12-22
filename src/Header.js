@@ -4,6 +4,7 @@ import { FaRegBell } from 'react-icons/fa';
 import './Header.css';
 import { useNotification } from './NotificationContext';
 
+
 const Header = () => {
   const [showNotification, setShowNotification] = useState(false);
   const toggleNotification = () => {
@@ -31,7 +32,9 @@ const Header = () => {
                 ))}
               </ul>
             ) : (
-              <div>No notifications</div>
+<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    No notifications
+  </div>
             )}
           </div>
         )}
