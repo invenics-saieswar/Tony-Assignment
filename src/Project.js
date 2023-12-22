@@ -46,35 +46,36 @@ function Project() {
         }
     };
     // Function to delete selected projects
-    const handleDeleteSelected = async() => {
-        const newList = projectsList.filter((project, index) => !selectedProjects.includes(index));
-        setProjectsList(newList);
-        setSelectedProjects([]);
-        //------------------------------------------------------------
-        try {
-            const response = await fetch('http://localhost:3001/sendDeleteProject', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(projectsList),
-            });
-        
-            if (response.ok) {
-                addNotification('Project Deleted successfully Mail Sent');
-              showSuccess();
-              // Display success message  inside try
-            } else {
-            }
-          } catch (error) {
-            console.error('Error:', error);
-            addNotification('Project Deleted successfully Mail Failed to Sent');
-            showError();
-            // Display error message inside catch
-           
-          }
-        //------------------------------------------------------------
-    };
+   // Function to delete selected projects
+const handleDeleteSelected = async () => {
+   
+    const newList = projectsList.filter((project, index) => !selectedProjects.includes(index));
+    setProjectsList(newList);
+    setSelectedProjects([]);
+  
+    try {
+      const response = await fetch('http://localhost:3001/sendDeleteProject', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(projectsList), 
+      });
+  
+      if (response.ok) {
+        addNotification('Project deleted successfully. Mail sent.');
+        showSuccess();
+      } else {
+        addNotification('Failed to delete project(s).');
+        showError();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      addNotification('Failed to delete project(s).');
+      showError();
+    }
+  };
+  
     const handleStartEditing = (index) => {
         setEditingIndex(index);
         const projectToEdit = projectsList[index];

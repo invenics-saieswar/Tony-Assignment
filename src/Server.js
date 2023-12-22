@@ -201,13 +201,13 @@ app.post('/sendCreateProject', async (req, res) => {
 //-------------------------------------------------------------------------------------
 
 app.post('/sendDeleteProject', async (req, res) => {
-  const { body } = req.body;
+  const { projectsList } = req.body;
 
       const mailOptions = {
           from: 'karthi.blogger.avatar@gmail.com',
           to: 'karthi.blogger.avatar@gmail.com',
           subject: "This Project has been deleted",
-          text: body
+           text: `These project has been deleted ${projectsList}`, // Join IDs as a string
       };
       try {
       await transporter.sendMail(mailOptions);
@@ -225,7 +225,7 @@ app.post('/sendEditProject', async (req, res) => {
           from: 'karthi.blogger.avatar@gmail.com',
           to: 'karthi.blogger.avatar@gmail.com',
           subject: "The project has been edited",
-          text: JSON.stringify(body)
+          text: `Project has been edited ${body}`,
       };
       try {
       await transporter.sendMail(mailOptions);
