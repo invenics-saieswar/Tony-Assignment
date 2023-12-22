@@ -45,13 +45,23 @@ function Project() {
             setSelectedProjects([...newSelected, index]);
         }
     };
-    // Function to delete selected projects
    // Function to delete selected projects
 const handleDeleteSelected = async () => {
    
     const newList = projectsList.filter((project, index) => !selectedProjects.includes(index));
     setProjectsList(newList);
-    setSelectedProjects([]);
+    const selectedProjectData = selectedProjects.map(index => projectsList[index]); // Get selected project objects
+  
+    const projectsData = selectedProjectData
+      .map(project => (
+        `ProjectName: ${project.projectName}
+         ProjectID: ${project.projectId}
+         Department: ${project.department}
+         StartDate: ${project.startDate}
+         EndDate: ${project.endDate}
+         SkillsRequired: ${Array.isArray(project.skillsRequired) ? project.skillsRequired.join(", ") : ''}\n\n`
+      ))
+      .join("\n");
   
     try {
       const response = await fetch('http://localhost:3001/sendDeleteProject', {
@@ -59,7 +69,7 @@ const handleDeleteSelected = async () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(projectsList), 
+        body: JSON.stringify({ body: projectsData }),
       });
   
       if (response.ok) {
@@ -74,6 +84,7 @@ const handleDeleteSelected = async () => {
       addNotification('Failed to delete project(s).');
       showError();
     }
+    setSelectedProjects([]);
   };
   
     const handleStartEditing = (index) => {
@@ -94,39 +105,50 @@ const handleDeleteSelected = async () => {
           if (i === index) {
             return {
               ...project,
-              ...projectData // Save changes from projectData to the project being edited
+              ...projectData // Update the project with the changes from projectData
             };
           }
           return project;
         });
       
+        const editedProject = updatedList[index]; // Get the project being edited
+      
+        console.log('Edited Project:', editedProject); // Log the edited project object
+      
         try {
+            const editedProjectString = `
+            Project Name: ${editedProject.projectName},
+            Project ID: ${editedProject.projectId},
+            Department: ${editedProject.department},
+            Start Date: ${editedProject.startDate},
+            End Date: ${editedProject.endDate},
+            Skills Required: ${editedProject.skillsRequired.join(', ')}
+          `;
+
+          console.log('Edited Project String:', editedProjectString); // Log the edited project object
           const response = await fetch('http://localhost:3001/sendEditProject', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(updatedList[index]),
+            body: JSON.stringify({ editedProjectString }), // Send the stringified version
           });
       
           if (response.ok) {
-            addNotification('Project Edited successfully Mail Sent');
+            addNotification('Project Edited successfully. Mail Sent');
             showSuccess();
-            // Display success message  inside try
           } else {
             alert('Project updated successfully! Failed to send email.');
           }
         } catch (error) {
           console.error('Error:', error);
-          addNotification('Project Edited successfully Mail Failed to Sent');
+          addNotification('Project Edited successfully. Mail Failed to Sent');
           showError();
-          // Display error message inside catch
         }
       
-
-       
         setProjectsList(updatedList);
-    };
+      };
+      
 
      // Function to display success message
   const showSuccess = () => {

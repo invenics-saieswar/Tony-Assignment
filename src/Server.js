@@ -201,13 +201,13 @@ app.post('/sendCreateProject', async (req, res) => {
 //-------------------------------------------------------------------------------------
 
 app.post('/sendDeleteProject', async (req, res) => {
-  const { projectsList } = req.body;
+  const { body} = req.body;
 
       const mailOptions = {
           from: 'karthi.blogger.avatar@gmail.com',
           to: 'karthi.blogger.avatar@gmail.com',
           subject: "This Project has been deleted",
-           text: `These project has been deleted ${projectsList}`, // Join IDs as a string
+           text: `the project has been deleted  ${body}`, // Join IDs as a string
       };
       try {
       await transporter.sendMail(mailOptions);
@@ -220,19 +220,21 @@ app.post('/sendDeleteProject', async (req, res) => {
 //-------------------------------------------------------------------------------------
 app.post('/sendEditProject', async (req, res) => {
   const { body } = req.body;
+ 
 
-      const mailOptions = {
-          from: 'karthi.blogger.avatar@gmail.com',
-          to: 'karthi.blogger.avatar@gmail.com',
-          subject: "The project has been edited",
-          text: `Project has been edited ${body}`,
-      };
-      try {
-      await transporter.sendMail(mailOptions);
-      res.status(200).send('Email sent successfully');
+  const mailOptions = {
+    from: 'karthi.blogger.avatar@gmail.com',
+    to: 'karthi.blogger.avatar@gmail.com',
+    subject: "The project has been edited",
+    text: `The Edited Project ${body}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).send('Email sent successfully');
   } catch (error) {
-      console.error('Error sending email:', error);
-      res.status(500).send('Failed to send email');
+    console.error('Error sending email:', error);
+    res.status(500).send('Failed to send email');
   }
 });
 

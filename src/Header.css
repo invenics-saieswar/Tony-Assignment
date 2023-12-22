@@ -66,12 +66,13 @@ img {
   
   .notification-popup li {
     padding: 8px;
+    text-align: start;
     border-radius: 4px;
     transition: background-color 0.3s; /* Smooth transition on hover */
   }
   
   .notification-popup li:hover {
     background-color: #e7dfdf; /* Change background color on hover */
-    cursor: pointer; /* Show pointer cursor on hover */
+    cursor: auto; /* Show pointer cursor on hover */
   }
   
