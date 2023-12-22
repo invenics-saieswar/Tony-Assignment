@@ -20,7 +20,7 @@ const Assign_Project = () => {
     { id: 10, name: 'Emp 10', role: 'Manager', skills: ['Angular'], assignedProjects: [] },
   ]);
 
-  const { addNotification } = useNotification();
+  
  
   const [projects, setProjects] = useState([
     { id: 101, name: 'Project A', description: 'Description for Project A', department: 'IT', assignedEmps: [], approvalStatus: 'Pending' },
@@ -46,6 +46,8 @@ const Assign_Project = () => {
   // State for managing success and error messages
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+  const { addNotification } = useNotification();
  
   const availableSkills = ['C++', 'Java', 'Python', 'JavaScript', 'React', 'Node.js', 'HTML', 'CSS', 'Django', 'Spring', 'Angular'];
   const availableDepartments = ['IT', 'HR', 'Finance','Marketing','Automation','Application Development'];
