@@ -8,8 +8,8 @@ import View_Employee from "./View_Employee";
 import Project from "./Project";
 import Assign_Project from "./Assign_Project";
 import Skill_Mapping from "./Skill_Mapping";
+import EmpAdd from "./Adding_Employee";
 import { NotificationProvider } from './NotificationContext';
-import Project_Approval from "./Project_Approval";
 
 
 
@@ -42,7 +42,7 @@ const LandingPage = () => {
       </div>
     </div>
         </div>
-        </NotificationProvider>
+           </NotificationProvider>
     )
  
 }
