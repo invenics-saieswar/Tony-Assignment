@@ -101,6 +101,7 @@ const Options = ({ onSelect }) => {
                 <a href="#" onClick={() => handleOptionClick("Admin/Project/Project")}>
                   Project
                 </a>
+                <hr />
                 <a href="#" onClick={() => handleOptionClick("Admin/Project/Assign Project")}>
                   Assign Project
                 </a>
@@ -116,6 +117,7 @@ const Options = ({ onSelect }) => {
                 <a href="#" onClick={() => handleOptionClick("Admin/Dept/Dept View")}>
                   Department View
                 </a>
+                <hr />
                 <a href="#" onClick={() => handleOptionClick("Admin/Dept/Edit Dep")}>
                  Edit Department
                 </a>
