@@ -6,6 +6,8 @@ const Options = ({ onSelect }) => {
   const [showEmployeeOptions, setShowEmployeeOptions] = useState(false);
   const [showAdminEmployeeOptions, setShowAdminEmployeeOptions] = useState(false);
   const [showAdminProjectOptions, setShowAdminProjectOptions] = useState(false);
+  const [showAdminDeptOptions, setShowAdminDeptOptions] = useState(false);
+  
 
   const handleOptionClick = (option) => {
     onSelect(option); // option is selected
@@ -27,13 +29,21 @@ const Options = ({ onSelect }) => {
   const handleAdminEmployeeClick = () => {
     setShowAdminEmployeeOptions(!showAdminEmployeeOptions);
     setShowAdminProjectOptions(false); // Close Admin Project options when Admin Employee is clicked
+    setShowAdminDeptOptions(false);
   };
 
   // This is for Admin Project click
   const handleAdminProjectClick = () => {
     setShowAdminProjectOptions(!showAdminProjectOptions);
     setShowAdminEmployeeOptions(false); // Close Admin options when Employee is clicked
+    setShowAdminDeptOptions(false);
   };
+
+  const handleAdminDeptClick = () => {
+    setShowAdminDeptOptions(!showAdminDeptOptions);
+    setShowAdminEmployeeOptions(false); // Close Admin options when Employee is clicked
+    setShowAdminProjectOptions(false);
+      };
 
   return (
     // This is main div for options
@@ -96,6 +106,23 @@ const Options = ({ onSelect }) => {
                 </a>
               </div>
             )}
+
+            <a href="#" onClick={handleAdminDeptClick}>
+               Department
+            </a>
+             {/* This is for Admin Project div*/}
+             {showAdminDeptOptions && (
+              <div className="adminProject-options">
+                <a href="#" onClick={() => handleOptionClick("Admin/Dept/Dept View")}>
+                  Department View
+                </a>
+                <a href="#" onClick={() => handleOptionClick("Admin/Dept/Edit Dep")}>
+                 Edit Department
+                </a>
+              </div>
+            )}
+
+
           </div>
         )}
       </div>

@@ -5,7 +5,7 @@ import './Header.css';
 import { useNotification } from './NotificationContext';
 
 
-const Header = () => {
+const Header = ({ handleAboutClick ,handleContactClick}) => {
   const [showNotification, setShowNotification] = useState(false);
   const toggleNotification = () => {
     setShowNotification(!showNotification);
@@ -39,8 +39,9 @@ const Header = () => {
           </div>
         )}
         <Link to="/" className="nav-link" onClick={refreshPage}>Home</Link>
-        <Link to="/about" className="nav-link" >About</Link>
-        <Link to="/contact" className="nav-link">Contact</Link>
+        {/* <Link to="/about" className="nav-link" >About</Link> */}
+        <Link className="nav-link" onClick={handleAboutClick}>About</Link>
+        <Link className="nav-link" onClick={handleContactClick} >Contact</Link>
         <div className="nav-img"></div>
       </nav>
     </div>
