@@ -1,4 +1,5 @@
 const express = require('express');
+const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
@@ -9,6 +10,17 @@ const PORT = 3001;
 app.use(bodyParser.json());
 app.use(cors());
 
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: ''
+});
+
+app.get('/', (req, res) => {
+    return res.json({ "message": "check" });
+});
+
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
@@ -16,7 +28,181 @@ const transporter = nodemailer.createTransport({
     pass: 'cxnu pxno dlhm zlkh', // Use the app-specific password here
   },
 });
+//ak
+app.get('/', (req, res) => {
+    return res.json({ "message": "check" });
+});
 
+app.post('/department', (req, res) => { //adding department
+    const { id, name } = req.body;
+    const sql='INSERT INTO department (dept_id, dept_name) VALUES (?, ?)';
+
+    db.query(sql, [id,name], (err) => {
+        if (err) {
+            console.error('Error adding department details:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({ message: 'Department details added successfully' });
+    });
+});
+
+app.get('/departmentView', (req, res) => {
+    const sql = "SELECT * FROM department";
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error retrieving department details:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({result });
+    });
+});
+
+app.put('/deptUpdate/:id', (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
+    
+    if (!name) {
+        return res.status(400).json({ message: 'Invalid department name provided' });
+    }
+
+    const sql = "UPDATE department SET dept_name=? WHERE dept_id=?";
+
+    db.query(sql, [name, id], (err) => {
+        if (err) {
+            console.error('Error updating department detail:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({ message: 'Department details updated successfully' });
+    });
+});
+
+
+app.delete('/deptDelete', (req, res) => {
+    const { id } = req.body;
+    
+    if (!id || !Array.isArray(id) || id.length === 0) {
+      return res.status(400).json({ message: 'Invalid department IDs provided' });
+    }
+  
+    const sql = "DELETE FROM department WHERE dept_id IN (?)";
+  
+    db.query(sql, [id], (err) => {
+      if (err) {
+        console.error('Error deleting department details:', err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+      }
+      res.json({ message: 'Department details deleted successfully' });
+    });
+  });
+
+  
+
+//////////employee
+app.post('/empadd', (req, res) => { //adding
+    const { id, name,role, department } = req.body;
+    const sql='INSERT INTO employee (emp_id, emp_name, emp_role, dept_id) VALUES (?, ?, ?, (SELECT dept_id FROM department WHERE dept_name = ?))';
+
+    db.query(sql, [id,name, role, department], (err) => {
+        if (err) {
+            console.error('Error adding employee details:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({ message: 'Employee details added successfully' });
+    });
+});
+
+
+app.get('/employeeDropdown', (req, res) => { //joining dept and emp table
+    const sql = "SELECT emp.emp_id, emp.emp_name, emp.emp_role, dept.dept_id, dept.dept_name FROM employee emp LEFT JOIN department dept ON emp.dept_id = dept.dept_id UNION SELECT emp.emp_id, emp.emp_name, emp.emp_role, dept.dept_id, dept.dept_name FROM employee emp RIGHT JOIN department dept ON emp.dept_id = dept.dept_id WHERE emp.emp_id IS NULL;";
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error retrieving employee dropdown data:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({ result });
+    });
+});
+
+
+
+app.get('/empView', (req, res) => {
+    const sql = "SELECT * FROM employee JOIN department ON employee.dept_id = department.dept_id";
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error retrieving employee details:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({result });
+    });
+});
+
+app.delete('/empDelete', (req, res) => {
+    const { id } = req.body;
+    
+    if (!id || !Array.isArray(id) || id.length === 0) {
+      return res.status(400).json({ message: 'Invalid employee IDs provided' });
+    }
+  
+    const sql = "DELETE FROM employee WHERE emp_id IN (?)";
+  
+    db.query(sql, [id], (err) => {
+      if (err) {
+        console.error('Error deleting employee details:', err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+      }
+      res.json({ message: 'employee details deleted successfully' });
+    });
+  });
+
+  app.put('/empUpdate/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, role, department } = req.body;
+
+    // Check if at least one field is provided
+    if (!name && !role && !department) {
+        return res.status(400).json({ message: 'Invalid employee details provided' });
+    }
+
+    const updateFields = [];
+    const values = [];
+
+    if (name) {
+        updateFields.push('emp_name=?');
+        values.push(name);
+    }
+
+    if (role) {
+        updateFields.push('emp_role=?');
+        values.push(role);
+    }
+
+    if (department) {
+        // Assuming department is the name of the department
+        updateFields.push('dept_id=(SELECT dept_id FROM department WHERE dept_name=?)');
+        values.push(department);
+    }
+
+    const sql = `UPDATE employee SET ${updateFields.join(', ')} WHERE emp_id=?`;
+
+    db.query(sql, [...values, id], (err) => {
+        if (err) {
+            console.error('Error updating employee details:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({ message: 'Employee details updated successfully' });
+    });
+});
+//
 app.post('/sendEmail', async (req, res) => {
   const { name, email } = req.body;
 
