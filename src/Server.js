@@ -270,7 +270,7 @@ app.post('/sendEditEmail', async (req, res) => {
 });
 
 //-------------------------------------------------------------------------------------
-app.post('/sendProjectApproval', async (req, res) => {
+app.post('/project-approval', async (req, res) => {
   const {  selectedProjectApproval,email } = req.body;
 
   const mailOptions = {

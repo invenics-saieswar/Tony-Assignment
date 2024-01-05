@@ -7,7 +7,7 @@ import Adding_Employee from "./Adding_Employee";
 import View_Employee from "./View_Employee";
 import Project from "./Project";
 import Assign_Project from "./Assign_Project";
-import Skill_Mapping from "./Skill_Mapping";
+
 
 
 
@@ -27,7 +27,7 @@ const LandingPage = () => {
         <Options onSelect={handleOptionClick}/>
       </div>
       <div className='right-div' >
-      {selectedOption === 'Employee/Skill Mapping' && <Skill_Mapping />}
+    
         {selectedOption === 'Admin/Employee/Adding Employee' && <Adding_Employee />}
         {selectedOption === 'Admin/Employee/View Employee' && <View_Employee />}
         {selectedOption === 'Admin/Project/Project' && <Project />}
