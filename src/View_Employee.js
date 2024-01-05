@@ -1,27 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './View_Employee.css';
 
 function View_Employee() {
-  // State declarations
-  const [employeeData, setEmployeeData] = useState({
-    1: { id: 1, name: 'Akshara', role: 'Manager', department: 'Automation' },
-    2: { id: 2, name: 'Karthi', role: 'Analyst', department: 'App Dev' },
-    3: { id: 3, name: 'Abdul', role: 'Director', department: 'SAP' },
-    4: { id: 4, name: 'Preethi', role: 'CEO', department: 'Google' },
-    // Add more employees as needed
-  });
-
+  const [employeeData, setEmployeeData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [editEmployee, setEditEmployee] = useState(null);
+  const [nameError, setNameError] = useState('');
+  const [allDepartments, setAllDepartments] = useState([]);
+
+  const roles = ['Analyst', 'Manager', 'Director'];
+  
+
+ 
 
     // State for managing success and error messages
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
 
+  useEffect(() => {
+    fetch('http://localhost:3001/empView')
+      .then((response) => response.json())
+      .then((data) => setEmployeeData(data.result))
+      .catch((error) => console.error('Error fetching employee data:', error));
+
+    fetch('http://localhost:3003/departmentView') // Fetch all departments
+      .then((response) => response.json())
+      .then((data) => setAllDepartments(data.result))
+      .catch((error) => console.error('Error fetching department data:', error));
+  }, []);
+
+  const refreshEmployeeData = () => {
+    fetch('http://localhost:3001/empView')
+      .then((response) => response.json())
+      .then((data) => setEmployeeData(data.result))
+      .catch((error) => console.error('Error fetching employee data:', error));
+  };
+
   // Function to handle employee deletion
   const handleDelete = async () => {
     // Collect selected employees for deletion
     const deletedEmployees = selectedRows.map((id) => employeeData[id]);
+
+    try {
+      const response = await fetch('http://localhost:3001/empDelete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: selectedRows }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Employee Data Deleted:', data);
+        refreshEmployeeData();
+        setSelectedRows([]);
+      } else {
+        console.error('Error deleting employee data:', data.message);
+      }
+    } catch (error) {
+      console.error('Error deleting employee data:', error);
+    }
 
     try {
       // Send delete email to server
@@ -58,13 +98,38 @@ function View_Employee() {
   };
 
   // Function to handle editing an employee
-  const handleEdit = () => {
-    setEditEmployee(selectedRows[0]);
+ const handleEdit = (employeeId) => {
+    setEditEmployee(employeeId);
   };
 
   // Function to save edited employee details
   const handleSaveEdit = async () => {
     const editedEmployee = employeeData[editEmployee];
+    try {
+      const response = await fetch(`http://localhost:3001/empUpdate/${editEmployee}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: employeeData.find((emp) => emp.emp_id === editEmployee).emp_name,
+          role: employeeData.find((emp) => emp.emp_id === editEmployee).emp_role,
+          department: employeeData.find((emp) => emp.emp_id === editEmployee).dept_name,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Employee Data Updated:', data);
+        refreshEmployeeData();
+        setEditEmployee(null);
+      } else {
+        console.error('Error updating employee data:', data.message);
+      }
+    } catch (error) {
+      console.error('Error updating employee data:', error);
+    }
 
     try {
       // Send edited employee data to server
@@ -112,12 +177,10 @@ function View_Employee() {
   // Function to handle input changes in edit mode
   const handleInputChange = (field, value) => {
     setEmployeeData((prevData) => {
-      const updatedData = { ...prevData };
-      updatedData[editEmployee] = {
-        ...updatedData[editEmployee],
-        [field]: value,
-      };
-      return updatedData;
+      const newData = [...prevData];
+      const editedIndex = newData.findIndex((emp) => emp.emp_id === editEmployee);
+      newData[editedIndex] = { ...newData[editedIndex], [field]: value };
+      return newData;
     });
   };
 
@@ -149,7 +212,7 @@ function View_Employee() {
           </>
         ) : (
           <>
-            <button onClick={handleEdit} disabled={selectedRows.length !== 1}>
+            <button onClick={() => handleEdit(selectedRows[0])} disabled={selectedRows.length !== 1}>
               Edit
             </button>
             <button onClick={handleDelete} disabled={selectedRows.length === 0}>
@@ -170,43 +233,51 @@ function View_Employee() {
           </tr>
         </thead>
         <tbody>
-          {/* Map through employee data to render table rows */}
-          {Object.values(employeeData).map((employee) => (
-            <tr key={employee.id}>
-              <td>{employee.id}</td>
+              {employeeData.map((employee) => (
+            <tr key={employee.emp_id}>
+              <td>{employee.emp_id}</td>
               <td>
-                {/* Render input in edit mode, otherwise show employee name */}
-                {editEmployee === employee.id ? (
+                {editEmployee === employee.emp_id ? (
                   <input
                     type="text"
-                    value={employeeData[employee.id].name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    value={employee.emp_name}
+                    onChange={(e) => handleInputChange('emp_name', e.target.value)}
                   />
                 ) : (
-                  employee.name
+                  employee.emp_name
                 )}
               </td>
               {/* Similar logic for 'Role' and 'Department' fields */}
               <td>
-                {editEmployee === employee.id ? (
-                  <input
-                    type="text"
-                    value={employeeData[employee.id].role}
-                    onChange={(e) => handleInputChange('role', e.target.value)}
-                  />
+               {editEmployee === employee.emp_id ? (
+                  <select
+                    value={employee.emp_role}
+                    onChange={(e) => handleInputChange('emp_role', e.target.value)}
+                  >
+                    {roles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
-                  employee.role
+                  employee.emp_role
                 )}
               </td>
               <td>
-                {editEmployee === employee.id ? (
-                  <input
-                    type="text"
-                    value={employeeData[employee.id].department}
-                    onChange={(e) => handleInputChange('department', e.target.value)}
-                  />
+                {editEmployee === employee.emp_id ? (
+                  <select
+                    value={employee.dept_name}
+                    onChange={(e) => handleInputChange('dept_name', e.target.value)}
+                  >
+                    {allDepartments.map((dept) => (
+                      <option key={dept.dept_id} value={dept.dept_name}>
+                        {dept.dept_name}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
-                  employee.department
+                  employee.dept_name
                 )}
               </td>
               <td>
