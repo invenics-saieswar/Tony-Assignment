@@ -1,5 +1,5 @@
 //-----------------------------------
-import React, { useState } from 'react';
+import React, { useState ,useEffect } from 'react';
 import './Adding_Employee.css';
 
 function EmpAdd() {
@@ -9,11 +9,12 @@ function EmpAdd() {
     role: '',
     department: '',
   });
-
-  const [showSuccessMessages, setShowSuccessMessages] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [nameError, setNameError] = useState('');
   const [idError, setIdError] = useState('');
   const [formError, setFormError] = useState('');
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+ 
 
    // State for managing success and error messages
    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -21,8 +22,17 @@ function EmpAdd() {
   
 
   const roles = ['Director', 'Manager', 'Analyst'];
-  const departments = ['Automation', 'SAP', 'App Dev', 'Product'];
 
+  useEffect(() => {
+    fetch('http://localhost:3001/employeeDropdown')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Department Options:', data.result);
+        setDepartmentOptions(data.result);
+      })
+      .catch((error) => console.error('Error fetching department dropdown data:', error));
+  }, []);
+ 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEmployeeData((prevData) => ({
@@ -62,6 +72,38 @@ function EmpAdd() {
     if (nameError || idError) {
       setFormError('Please fix the validation errors before submitting.');
       return;
+    }
+
+    // Send a POST request to the server
+    try {
+      const response = await fetch('http://localhost:3001/empadd', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(employeeData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Employee Data Submitted:', data);
+        setShowSuccessMessage(true);
+
+        // Clear the form fields after successful submission
+        setEmployeeData({
+          id: '',
+          name: '',
+          role: '',
+          department: '',
+        });
+      } else {
+        console.error('Error submitting employee data:', data.message);
+        setFormError('Failed to add employee. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting employee data:', error);
+      setFormError('Failed to add employee. Please try again.');
     }
 
     try {
@@ -182,9 +224,9 @@ function EmpAdd() {
             required
           >
             <option value="">Select Department</option>
-            {departments.map((department, index) => (
-              <option key={index} value={department}>
-                {department}
+            {departmentOptions.map((department) => (
+              <option key={department.dept_id} value={department.dept_name}>
+                {department.dept_name}
               </option>
             ))}
           </select>
