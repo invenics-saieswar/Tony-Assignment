@@ -102,7 +102,7 @@ function Project() {
     const handleDeleteSelected = async () => {
         const selectedProjectIds = projectsList
             .filter((project, index) => selectedProjects.includes(index))
-            .map((selectedProject) => selectedProject.id);
+            .map((selectedProject) => selectedProject.projectId); // Change this to 'projectId'
 
         try {
             const response = await fetch('http://localhost:3006/deleteProjects', {
@@ -115,7 +115,7 @@ function Project() {
 
             if (response.ok) {
                 // Assuming the deletion in the backend was successful
-                const newList = projectsList.filter((project) => !selectedProjectIds.includes(project.id));
+                const newList = projectsList.filter((project) => !selectedProjectIds.includes(project.projectId));
                 setProjectsList(newList);
                 setSelectedProjects([]);
                 console.log('Projects deleted from the database successfully!');
@@ -129,6 +129,7 @@ function Project() {
             // Handle any network-related errors for deletion
         }
     };
+
 
     const handleStartEditing = (index) => {
         setEditingIndex(index);
@@ -697,3 +698,5 @@ function Project() {
         </div>
     );
 }
+
+export default Project;
