@@ -1,10 +1,71 @@
 // Import React and useState hook
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import './Project.css';
 
 
 // Main Project component
 function Project() {
+    // Assume this code is part of your React component
+
+    const createProject = async () => {
+        const newProjectData = {
+            projectName: 'My Project', // Replace these values with actual project data
+            projectId: '12345',
+            department: 'IT',
+            startDate: '2024-01-10',
+            endDate: '2024-02-10',
+            skillsRequired: ['React', 'Node.js']
+        };
+
+        try {
+            const response = await fetch('http://localhost:3006/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newProjectData)
+            });
+
+            if (response.ok) {
+                console.log('Project created successfully!');
+                // Perform any necessary actions after successful project creation
+            } else {
+                console.error('Failed to create project');
+                // Handle the error scenario
+            }
+        } catch (error) {
+            console.error('Error creating project:', error);
+            // Handle any network-related errors
+        }
+    };
+
+    const retrieveProjects = async () => {
+        try {
+            const response = await fetch('http://localhost:3006/projects');
+
+            if (response.ok) {
+                const projects = await response.json();
+                console.log('Retrieved projects:', projects);
+                setProjectsList(projects);
+                // Use the retrieved projects data in your React component
+            } else {
+                console.error('Failed to retrieve projects');
+                // Handle the error scenario
+            }
+        } catch (error) {
+            console.error('Error retrieving projects:', error);
+            // Handle any network-related errors
+        }
+    };
+
+    // Call these functions as needed in your React component
+    // createProject(); // To create a new project
+    // retrieveProjects(); // To retrieve all projects
+    useEffect(() => {
+        // This will run once when the component mounts
+        retrieveProjects(); // Retrieve projects when the component mounts
+    }, []);
+
     // State variables using useState hook
     const [displayedComponent, setDisplayedComponent] = useState(null);
     const [projectsList, setProjectsList] = useState([]);
@@ -38,10 +99,35 @@ function Project() {
         }
     };
     // Function to delete selected projects
-    const handleDeleteSelected = () => {
-        const newList = projectsList.filter((project, index) => !selectedProjects.includes(index));
-        setProjectsList(newList);
-        setSelectedProjects([]);
+    const handleDeleteSelected = async () => {
+        const selectedProjectIds = projectsList
+            .filter((project, index) => selectedProjects.includes(index))
+            .map((selectedProject) => selectedProject.id);
+
+        try {
+            const response = await fetch('http://localhost:3006/deleteProjects', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selectedProjectIds }) // Send the list of selected project IDs to delete
+            });
+
+            if (response.ok) {
+                // Assuming the deletion in the backend was successful
+                const newList = projectsList.filter((project) => !selectedProjectIds.includes(project.id));
+                setProjectsList(newList);
+                setSelectedProjects([]);
+                console.log('Projects deleted from the database successfully!');
+                // Perform any necessary actions after successful deletion from the database
+            } else {
+                console.error('Failed to delete projects from the database');
+                // Handle the error scenario for database deletion
+            }
+        } catch (error) {
+            console.error('Error deleting projects from the database:', error);
+            // Handle any network-related errors for deletion
+        }
     };
 
     const handleStartEditing = (index) => {
@@ -54,21 +140,33 @@ function Project() {
     };
 
     // Function to save edits when editing a project
-    const handleSaveEditing = (index) => {
+    const handleSaveEditing = async (index) => {
         console.log(`Saving edits for project at index ${index}`);
         setEditingIndex(null);
 
-        const updatedList = projectsList.map((project, i) => {
-            if (i === index) {
-                return {
-                    ...project,
-                    ...projectData // Save changes from projectData to the project being edited
-                };
-            }
-            return project;
-        });
+        // Get the updated project
+        const updatedProject = projectsList[index];
+        // Convert startDate and endDate to YYYY-MM-DD format
+        updatedProject.startDate = updatedProject.startDate.split('T')[0];
+        updatedProject.endDate = updatedProject.endDate.split('T')[0];
+        try {
+            const response = await fetch(`http://localhost:3006/updateProject/${updatedProject.projectId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedProject)
+            });
 
-        setProjectsList(updatedList);
+            if (response.ok) {
+                retrieveProjects(); // Refresh the projects list after successful update
+                console.log('Project updated successfully!');
+            } else {
+                console.error('Failed to update project');
+            }
+        } catch (error) {
+            console.error('Error updating project:', error);
+        }
     };
 
     const handleEditInputChange = (e, index, fieldName) => {
@@ -281,8 +379,7 @@ function Project() {
         const isValid = validateForm();
 
         if (isValid) {
-            // Rest of your logic for creating a project...
-            const newProject = {
+            const newProjectData = {
                 projectName: projectData.projectName,
                 projectId: projectData.projectId,
                 department: projectData.department,
@@ -291,21 +388,39 @@ function Project() {
                 skillsRequired: projectData.skillsRequired
             };
 
-            setProjectsList([...projectsList, newProject]);
+            try {
+                const response = await fetch('http://localhost:3006/createProject', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newProjectData),
+                });
 
-            setProjectData({
-                projectName: "",
-                projectId: "",
-                department: "",
-                startDate: "",
-                endDate: "",
-                skillsRequired: [],
-                newSkill: ""
-            });
+                if (response.ok) {
+                    // Project created successfully in the backend
+                    // Update frontend or handle as needed
+                    setProjectData({
+                        projectName: "",
+                        projectId: "",
+                        department: "",
+                        startDate: "",
+                        endDate: "",
+                        skillsRequired: [],
+                        newSkill: ""
+                    });
 
-            sendEmail(newProject);
-
-            alert("Project created successfully!");
+                    sendEmail(newProjectData);
+                    alert("Project created successfully!");
+                } else {
+                    alert('Failed to create project');
+                    // Handle the error scenario
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating project');
+                // Handle any network-related errors
+            }
         } else {
             alert('Please check all the fields.');
         }
@@ -515,33 +630,34 @@ function Project() {
                                             {editingIndex === index ? (
                                                 <input
                                                     type="date"
-                                                    value={project.startDate}
+                                                    value={project.startDate.split('T')[0]} // Extracting date part only
                                                     onChange={(e) => handleEditInputChange(e, index, "startDate")}
                                                 />
                                             ) : (
-                                                project.startDate
+                                                project.startDate.split('T')[0] // Extracting date part only
                                             )}
                                         </td>
                                         <td>
                                             {editingIndex === index ? (
                                                 <input
                                                     type="date"
-                                                    value={project.endDate}
+                                                    value={project.endDate.split('T')[0]} // Extracting date part only
                                                     onChange={(e) => handleEditInputChange(e, index, "endDate")}
                                                 />
                                             ) : (
-                                                project.endDate
+                                                project.endDate.split('T')[0] // Extracting date part only
                                             )}
                                         </td>
+
                                         <td>
                                             {editingIndex === index ? (
                                                 <input
                                                     type="text"
-                                                    value={projectData.skillsRequired.join(",")}
+                                                    value={projectData.skillsRequired}
                                                     onChange={(e) => handleEditInputChange(e, index, "skillsRequired")}
                                                 />
                                             ) : (
-                                                project.skillsRequired.join(", ")
+                                                project.skillsRequired
                                             )}
                                         </td>
 
@@ -561,54 +677,7 @@ function Project() {
                 );
 
             default: return null
-            // return (
-            //     <div className="list-of-projects-container">
-            //         {/* Your code for List of Projects component */}
-            //         {/* ... */}
-            //         <h1 className="list-of-projects-title">List of Projects</h1>
-            //         <table className="projects-table unique-projects-table">
-            //             <thead>
-            //                 <tr>
-            //                     <th>Project Name</th>
-            //                     <th>Project ID</th>
-            //                     <th>Department</th>
-            //                     <th>Start Date</th>
-            //                     <th>End Date</th>
-            //                     <th>Skills Required</th>
-            //                 </tr>
-            //             </thead>
-            //             <tbody>
-            //                 {projectsList.map((project, index) => (
-            //                     <tr key={index}>
-            //                         <td>{project.projectName}</td>
-            //                         <td>{project.projectId}</td>
-            //                         <td>{project.department}</td>
-            //                         <td>{project.startDate}</td>
-            //                         <td>{project.endDate}</td>
-            //                         <td>{project.skillsRequired.join(", ")}</td>
-            //                     </tr>
-            //                 ))}
-            //             </tbody>
-            //             <tbody>
-            //                 {projectsList && projectsList.length > 0 && projectsList.map((project, index) => (
-            //                     <tr key={index}>
-            //                         <td>{project.projectName}</td>
-            //                         <td>{project.projectId}</td>
-            //                         <td>{project.department}</td>
-            //                         <td>{project.startDate}</td>
-            //                         <td>{project.endDate}</td>
-            //                         <td>{project.skillsRequired.join(", ")}</td>
-            //                         <td>
-            //                             {/* Your actions */}
-            //                             {/* ... */}
-            //                         </td>
-            //                     </tr>
-            //                 ))}
-            //             </tbody>
 
-            //         </table>
-            //     </div>
-            // );
         }
     };
 
@@ -623,9 +692,8 @@ function Project() {
             </div>
             {/* Component container to render the appropriate component */}
 
+
             <div className="component-container"> {renderComponent()}</div>
         </div>
     );
 }
-
-export default Project;
