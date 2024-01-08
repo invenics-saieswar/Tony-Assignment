@@ -1,0 +1,50 @@
+/* Options.css */
+
+ul {
+    list-style: none;
+    width: 100%;
+    padding: 0; 
+}
+ 
+li {
+    width: 100%;
+    padding: 3px 2px;
+    background-color: white; 
+}
+
+a {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding: 10px 20px; /* Adjust padding to create spacing around the text */
+}
+
+a:hover {
+    background-color: rgb(156, 183, 156); /* Change color on hover if desired */
+}
+
+.options-div {
+    width: 100%;
+    padding: 3px 2px 3px 20px;
+    height:550px;
+}
+
+.employee-options {
+    background-color: rgb(223, 183, 155);
+}
+
+.admin-options {
+    background-color: rgb(196, 214, 131);
+}
+
+.adminEmployee-options {
+    background-color: rgb(223, 183, 155);
+}
+
+.adminProject-options {
+    background-color: rgb(223, 183, 155);
+}
+
+.adminDepartment-options {
+    background-color: rgb(223, 183, 155);
+}

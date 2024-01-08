@@ -1,0 +1,91 @@
+/* deptAdd.css */
+.dept-add-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ 
+    /* Center the container vertically and horizontally */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 75vh; /* Set the height to 100% of the viewport height */
+  }
+ 
+  .dept-add-title {
+    font-size: 1.5em;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+ 
+  .dept-add-form {
+    display: flex;
+    flex-direction: column;
+  }
+ 
+  .dept-add-input-group {
+    margin-bottom: 15px;
+  }
+ 
+  .dept-add-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+ 
+  .dept-add-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 5px;
+    box-sizing: border-box;
+  }
+ 
+  .dept-add-button-submit {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+ 
+  .dept-add-button-submit:hover {
+    background-color: #45a049;
+  }
+ 
+  .dept-add-success-message {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
+    border-radius: 4px;
+  }
+ 
+  /* Success message popup */
+.message-popup.success {
+  background-color: rgba(94, 186, 125, 0.8); /* Semi-transparent green background color */
+  color: #ffffff; /* White text color */
+  box-shadow: 0 0 10px rgba(94, 186, 125, 0.5); /* Green shadow */
+  position: fixed; /* Fixed positioning */
+  top: 70px; /* Distance from top */
+  right: 20px; /* Distance from right */
+  padding: 10px; /* Padding around the text */
+  border-radius: 0 40px 0 40px ;
+}
+ 
+/* Error message popup */
+.message-popup.error {
+  background-color: rgba(244, 67, 54, 0.8); /* Semi-transparent red background color */
+  color: #ffffff; /* White text color */
+  box-shadow: 0 0 10px rgba(244, 67, 54, 0.5); /* Red shadow */
+  position: fixed; /* Fixed positioning */
+  top: 70px; /* Distance from top */
+  right: 20px; /* Distance from right */
+  padding: 10px; /* Padding around the text */
+  border-radius:  40px 0 40px 0;
+}

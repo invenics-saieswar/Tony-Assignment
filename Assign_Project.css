@@ -1,0 +1,87 @@
+/* Container styling */
+.admin-dashboard {
+    max-width: 400px;
+    margin-top: 10px;
+    margin-left:200px;
+    padding: 30px;
+    border: 2px solid #3498db;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+    background-color: #fff;
+    margin-bottom: 65px;
+    overflow: auto;
+}
+ 
+/* Header styling */
+.dashboard-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+    color: #3498db;
+}
+ 
+/* Label styling */
+label {
+    display: block;
+    margin-bottom: 15px;
+    color: #333;
+}
+ 
+/* Input and Select styling */
+select,
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+ 
+/* Button styling */
+.assign-button {
+    background-color: #2ecc71;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+ 
+.assign-button:hover {
+    background-color: #27ae60;
+}
+ 
+/* Popup styling */
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 30px;
+    border: 2px solid #e74c3c;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.2);
+    border-radius: 8px;
+}
+ 
+/* Project info styling */
+.project-info {
+    margin-top: 30px;
+}
+ 
+/* Approve button styling */
+.approve-button {
+    background-color: #3498db;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+ 
+.approve-button:hover {
+    background-color: #2980b9;
+}
+ 
