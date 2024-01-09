@@ -17,7 +17,7 @@ function EmpAdd() {
  
 
    // State for managing success and error messages
-   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+   const [showSuccessMessages, setShowSuccessMessages] = useState(false);
    const [showErrorMessage, setShowErrorMessage] = useState(false);
   
 
