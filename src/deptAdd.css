@@ -65,3 +65,27 @@
     border-radius: 4px;
   }
   
+  /* Success message popup */
+.message-popup.success {
+  background-color: rgba(94, 186, 125, 0.8); /* Semi-transparent green background color */
+  color: #ffffff; /* White text color */
+  box-shadow: 0 0 10px rgba(94, 186, 125, 0.5); /* Green shadow */
+  position: fixed; /* Fixed positioning */
+  top: 70px; /* Distance from top */
+  right: 20px; /* Distance from right */
+  padding: 10px; /* Padding around the text */
+  border-radius: 0 40px 0 40px ;
+}
+ 
+/* Error message popup */
+.message-popup.error {
+  background-color: rgba(244, 67, 54, 0.8); /* Semi-transparent red background color */
+  color: #ffffff; /* White text color */
+  box-shadow: 0 0 10px rgba(244, 67, 54, 0.5); /* Red shadow */
+  position: fixed; /* Fixed positioning */
+  top: 70px; /* Distance from top */
+  right: 20px; /* Distance from right */
+  padding: 10px; /* Padding around the text */
+  border-radius:  40px 0 40px 0;
+}
+ 

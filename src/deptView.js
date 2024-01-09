@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import './deptView.css';
+import {useNotification} from './NotificationContext';
 
 function DeptManagement() {
   const [departmentData, setDepartmentData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [editDepartment, setEditDepartment] = useState(null);
+
+  // State for managing success and error messages
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     fetch('http://localhost:3001/departmentView')  // Corrected endpoint
@@ -21,13 +27,37 @@ function DeptManagement() {
   };
 
   const handleDelete = async () => {
+    const deletedDepartments = selectedRows.map((id) => departmentData.find((dept) => dept.dept_id === id));
+   
+    try {
+      const response = await fetch('http://localhost:3001/sendDeleteDepartmentEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ deletedDepartments }),
+      });
+  
+      if (response.ok) {
+        console.log('Delete email sent successfully!');
+        showSuccess();
+        addNotification('Department Deleted successfully');
+      } else {
+        console.error('Failed to send delete email.');
+        showError();
+      }
+    } catch (error) {
+      console.error('Error sending delete email:', error);
+      addNotification('Failed to send the mail');
+    }
+  
     try {
       const response = await fetch('http://localhost:3001/deptDelete', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({id: selectedRows }),
+        body: JSON.stringify({ id: selectedRows }),
       });
   
       const data = await response.json();
@@ -44,42 +74,87 @@ function DeptManagement() {
       console.error('Error deleting department data:', error);
     }
   };
-
+  
   const handleEdit = () => {
     setEditDepartment(selectedRows[0]);
   };
 
   const handleSaveEdit = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/deptUpdate/${editDepartment}`, {
-        method: 'PUT',
-        headers: {
+      // Assuming 'editDepartment' is a valid ID
+      const editedDepartment = departmentData.find((dept) => dept.dept_id === editDepartment);
+  
+      if (editedDepartment) {
+        const { dept_name: name } = editedDepartment; // Updated destructuring
+        console.log("checking the variable" + name);
+  
+        // Send edit email
+        const emailResponse = await fetch('http://localhost:3001/sendEditDepartmentEmail', {
+          method: 'POST',
+          headers: {
             'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+          },
+          body: JSON.stringify({ name }),
+        });
+  
+        if (emailResponse.ok) {
+          console.log('Edit email sent successfully!');
+          //  addNotification('Dept Edit email sent successfully!');
+          showSuccess();
+        } else {
+          console.error('Failed to send edit email.');
+        }
+  
+        // Continue with the update only if the email is sent successfully
+        const updateResponse = await fetch(`http://localhost:3001/deptUpdate/${editDepartment}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             name: departmentData.find((dept) => dept.dept_id === editDepartment).dept_name,
-        }),
-    });
-    
-      
-
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log('Department Data Updated:', data);
-        // Refresh the department data after successful update
-        refreshDepartmentData();
-        setEditDepartment(null);
+          }),
+        });
+  
+        const updateData = await updateResponse.json();
+  
+        if (updateResponse.ok) {
+          console.log('Department Data Updated:', updateData);
+          refreshDepartmentData();
+          setEditDepartment(null);
+        } else {
+          console.error('Error updating department data:', updateData.message);
+        }
       } else {
-        console.error('Error updating department data:', data.message);
+        console.error('Edited department not found.');
+        showError();
       }
     } catch (error) {
-      console.error('Error updating department data:', error);
+      console.error('Error:', error);
+  
+      //  addNotification('Failed to send the mail or update department data');
     }
   };
+  
 
   const handleCancelEdit = () => {
     setEditDepartment(null);
+  };
+
+   // Function to display success message
+   const showSuccess = () => {
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000); // Hide success message after 3 seconds
+  };
+
+  // Function to display error message
+  const showError = () => {
+    setShowErrorMessage(true);
+    setTimeout(() => {
+      setShowErrorMessage(false);
+    }, 3000); // Hide error message after 3 seconds
   };
 
   const handleCheckboxChange = (departmentId) => {
@@ -156,6 +231,16 @@ function DeptManagement() {
           ))}
         </tbody>
       </table>
+      {showSuccessMessage && (
+        <div className="message-popup success">
+          <p>Email sent successfully!</p>
+        </div>
+      )}
+      {showErrorMessage && (
+        <div className="message-popup error">
+          <p>Failed to send email.</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,39 +1,40 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaRegBell } from 'react-icons/fa';
+import { FaRegBell, FaTimes } from 'react-icons/fa'; // Import the close icon
 import './Header.css';
-
-const Header = () => {
+import { useNotification } from './NotificationContext';
+ 
+const Header = ({ handleAboutClick, handleContactClick }) => {
   const [showNotification, setShowNotification] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-
   const toggleNotification = () => {
     setShowNotification(!showNotification);
   };
-
-  const addNotification = (message, type) => {
-    const newNotification = {
-      id: Date.now(),
-      message,
-      type,
-    };
-
-    setNotifications([...notifications, newNotification]);
-
-    setTimeout(() => {
-      removeNotification(newNotification.id);
-    }, 5000);
-  };
-
-  const removeNotification = (id) => {
-    const updatedNotifications = notifications.filter((notification) => notification.id !== id);
-    setNotifications(updatedNotifications);
-  };
-
+  const { notificationMessages } = useNotification();
+ 
   const refreshPage = () => {
     window.location.reload();
   };
-
+ 
+  const handleDismiss = (Id) => {
+    fetch(`http://localhost:3001/data/${Id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log(`Notification ${Id} dismissed`);
+          // Update your notification state or perform any other necessary actions
+        } else {
+          console.error('Failed to dismiss notification');
+        }
+      })
+      .catch((error) => {
+        console.error('Error while dismissing notification:', error);
+      });
+  };
+ 
   return (
     <div className='Main-div'>
       <nav className="navbar">
@@ -41,17 +42,29 @@ const Header = () => {
         <FaRegBell className="bell-icon" onClick={toggleNotification} />
         {showNotification && (
           <div className="notification-popup">
-            {/* Your notification content goes here */}
-            Notification Message
+            {notificationMessages && notificationMessages.length > 0 ? (
+              <ul className="notification-list">
+                {notificationMessages.map((message) => (
+                  <li key={message.Id} className="notification-item">
+                    <span>{message.Message}</span>
+                    <FaTimes className="dismiss-icon" onClick={() => handleDismiss(message.Id)} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                No notifications
+              </div>
+            )}
           </div>
         )}
         <Link to="/" className="nav-link" onClick={refreshPage}>Home</Link>
-        <Link to="/about" className="nav-link" >About</Link>
-        <Link to="/contact" className="nav-link">Contact</Link>
+        <Link className="nav-link" onClick={handleAboutClick}>About</Link>
+        <Link className="nav-link" onClick={handleContactClick}>Contact</Link>
         <div className="nav-img"></div>
       </nav>
     </div>
   );
 };
-
+ 
 export default Header;

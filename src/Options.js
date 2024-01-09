@@ -6,6 +6,7 @@ const Options = ({ onSelect }) => {
   const [showEmployeeOptions, setShowEmployeeOptions] = useState(false);
   const [showAdminEmployeeOptions, setShowAdminEmployeeOptions] = useState(false);
   const [showAdminProjectOptions, setShowAdminProjectOptions] = useState(false);
+  const [showAdminDeptOptions, setShowAdminDeptOptions] = useState(false);
 
   const handleOptionClick = (option) => {
     onSelect(option); // option is selected
@@ -34,6 +35,12 @@ const Options = ({ onSelect }) => {
     setShowAdminProjectOptions(!showAdminProjectOptions);
     setShowAdminEmployeeOptions(false); // Close Admin options when Employee is clicked
   };
+
+  const handleAdminDeptClick = () => {
+    setShowAdminDeptOptions(!showAdminDeptOptions);
+    setShowAdminEmployeeOptions(false); // Close Admin options when Employee is clicked
+    setShowAdminProjectOptions(false);
+      };
 
   return (
     // This is main div for options
@@ -96,6 +103,22 @@ const Options = ({ onSelect }) => {
                 </a>
               </div>
             )}
+
+<a href="#" onClick={handleAdminDeptClick}>
+               Department
+            </a>
+             {/* This is for Admin Project div*/}
+             {showAdminDeptOptions && (
+              <div className="adminProject-options">
+                <a href="#" onClick={() => handleOptionClick("Admin/Dept/Dept View")}>
+                  Add Department
+                </a>
+                <a href="#" onClick={() => handleOptionClick("Admin/Dept/Edit Dep")}>
+                 View Department
+                </a>
+              </div>
+            )}
+
           </div>
         )}
       </div>

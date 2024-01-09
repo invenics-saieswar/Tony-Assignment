@@ -1,16 +1,16 @@
 /* Header.css */
-
+ 
 .Main-div {
     text-align: right;
 }
-
+ 
 .nav-text {
     display: flex;
     justify-content: flex-start;
     padding-right:500px;
     font-size:24px;
     color:white;
-
+ 
 }
 .navbar {
     display: flex;
@@ -20,22 +20,22 @@
     height:70px;
     align-items: center;
 }
-
+ 
 .nav-link {
     margin-right: 10px;
     text-decoration: none;
     color: white;
     font-family:'Times New Roman', Times, serif;
     padding-right:10px;
-    
+   
 }
-
+ 
 img {
     height:30px;
     width:30px;
     padding-right:30px;
 }
-
+ 
 .bell-icon {
     margin-left: 20px;
     cursor: pointer;
@@ -44,7 +44,7 @@ img {
     cursor: pointer;
     color: ghostwhite;
   }
-
+ 
   .notification-popup {
     position: absolute;
     top: 60px; /* Adjust the top position to position it below the bell icon */
@@ -52,11 +52,34 @@ img {
     background-color: #fff;
     border: 1px solid #ccc;
     padding: 10px;
+    width: 300px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 999; /* Ensure it's above other elements */
     /* Add any additional styles as needed */
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column; /* Display messages in a column */
+    gap: 8px; /* Space between messages */
+    max-height: 200px; /* Limit height to show scrollbar if needed */
+    overflow-y:auto; /* Enable scrollbar when content exceeds max height */
+    overflow-x: hidden;
+}
+ 
+.dismiss-icon {
+  float: right; /* Align the X mark to the right */
+  cursor: pointer;
+  margin-left: 5px; /* Add some margin for spacing */
+  padding-right: 10px;
+}
+ 
+  .notification-popup li {
+    padding: 8px;
+    text-align: start;
+    border-radius: 4px;
+    transition: background-color 0.3s; /* Smooth transition on hover */
   }
-  
+ 
+  .notification-popup li:hover {
+    background-color: #e7dfdf; /* Change background color on hover */
+    cursor: auto; /* Show pointer cursor on hover */
+  }
+ 

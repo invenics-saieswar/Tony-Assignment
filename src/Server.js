@@ -3,6 +3,7 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+const { emphasize } = require('@mui/material');
 
 const app = express();
 const PORT = 3001;
@@ -13,8 +14,8 @@ app.use(cors());
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '',
-    database: ''
+    password: 'akshara',
+    database: 'project'
 });
 
 app.get('/', (req, res) => {
@@ -31,6 +32,33 @@ const transporter = nodemailer.createTransport({
 //ak
 app.get('/', (req, res) => {
     return res.json({ "message": "check" });
+});
+
+//to view notifications from database
+app.get('/data', (req, res) => {
+  db.query('SELECT *from notifications', (error, results) => {
+    if (error) {
+      console.error('Error executing query:', error);
+      res.status(500).json({ error: 'Error fetching data' });
+    } else {
+      res.json(results);
+     
+    }
+  });
+});
+
+//to delete notification from database
+app.delete('/data/:id', (req, res) => {
+  const { id } = req.params; // Use lowercase 'id' here
+  db.query('DELETE FROM notifications WHERE id = ?', [id], (error, results) => {
+    if (error) {
+      console.error('Error executing query:', error);
+      res.status(500).json({ error: 'Error deleting data' });
+    } else {
+      res.status(204).end(); // 204: No Content (successful deletion)
+      console.log("id deleted successfully");
+    }
+  });
 });
 
 app.post('/department', (req, res) => { //adding department
@@ -203,6 +231,7 @@ app.delete('/empDelete', (req, res) => {
     });
 });
 //
+
 app.post('/sendEmail', async (req, res) => {
   const { name, email } = req.body;
 
@@ -223,6 +252,8 @@ app.post('/sendEmail', async (req, res) => {
 });
 
 //-------------------------------------------------------------------------------------
+
+//to send mail for adding a employee
 app.post('/sendaddEmp', async (req, res) => {
   const { name, id, role, department, email } = req.body;
 
@@ -242,9 +273,31 @@ app.post('/sendaddEmp', async (req, res) => {
   try {
     await transporter.sendMail(mailOptions);
     res.status(200).send('Email sent successfully!');
+     //-------------------------------------------------------------------------------
+     db.query('INSERT INTO notifications (Message) VALUES ("Emp added email sent successfully!");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
   } catch (error) {
     console.error('Error sending email:', error);
     res.status(500).send('Failed to send email.');
+    //-------------------------------------------------------------------------------
+    db.query('INSERT INTO notifications (Message) VALUES ("Emp added mail fail to send");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
   }
 });
 //-------------------------------------------------------------------------------------
@@ -284,7 +337,7 @@ app.post('/sendDeleteEmaill', async (req, res) => {
     subject: 'Last Mail from the Company',
     html: `
       <p>This is your last email from the company.</p>
-      <p>Employee ID: ${id}</p>
+      <p>Employee ID: ${emp_name}</p>
     `,
   };
 
@@ -300,6 +353,7 @@ app.post('/sendDeleteEmaill', async (req, res) => {
 //-------------------------------------------------------------------------------------
 app.post('/sendDeptAddEmail', async (req, res) => {
   const { id, name, email } = req.body;
+  let error;
 
   const mailOptions = {
     from: 'karthi.blogger.avatar@gmail.com', // Replace with your email
@@ -315,10 +369,20 @@ app.post('/sendDeptAddEmail', async (req, res) => {
   try {
     await transporter.sendMail(mailOptions);
     res.status(200).send('Department add email sent successfully!');
-  } catch (error) {
+  } catch (mailError) {
+    error = mailError;
     console.error('Error sending department add email:', error);
     res.status(500).send('Failed to send department add email.');
   }
+
+  // Always log to the database, whether email sending was successful or not
+  const logMessage = (error ? 'Failed to send' : 'Sent') + ' department add email';
+  db.query(`INSERT INTO notifications (Message) VALUES ("${logMessage}");`, (dbError, results) => {
+    if (dbError) {
+      console.error('Error executing query:', dbError);
+      // Consider sending an additional response here if needed
+    }
+  });
 });
 
 //-------------------------------------------------------------------------------------
@@ -369,7 +433,7 @@ app.post('/sendDeptDeleteEmail', async (req, res) => {
 //-------------------------------------------------------------------------------------
 app.post('/sendCreateProject', async (req, res) => {
   const { subject, body } = req.body;
-
+ 
       const mailOptions = {
           from: 'karthi.blogger.avatar@gmail.com',
           to: 'karthi.blogger.avatar@gmail.com',
@@ -379,59 +443,131 @@ app.post('/sendCreateProject', async (req, res) => {
       try {
       await transporter.sendMail(mailOptions);
       res.status(200).send('Email sent successfully');
+      //-------------------------------------------------------------------------------
+     db.query('INSERT INTO notifications (Message) VALUES ("Project created mail sent");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
   } catch (error) {
       console.error('Error sending email:', error);
       res.status(500).send('Failed to send email');
+      //-------------------------------------------------------------------------------
+     db.query('INSERT INTO notifications (Message) VALUES ("Failed to send project created email");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
   }
 });
 //-------------------------------------------------------------------------------------
-app.post('/senddeleteProject', async (req, res) => {
-  const { projectId } = req.body;
-
+app.post('/sendDeleteProject', async (req, res) => {
+  const { body} = req.body;
+ 
       const mailOptions = {
           from: 'karthi.blogger.avatar@gmail.com',
           to: 'karthi.blogger.avatar@gmail.com',
-          subject: `Project with ID: ${projectId} had been deleted`,
-          text:'The project has been deleted from the database.'
+          subject: "This Project has been deleted",
+           text: `the project has been deleted  ${body}`, // Join IDs as a string
       };
       try {
       await transporter.sendMail(mailOptions);
       res.status(200).send('Email sent successfully');
+      //-------------------------------------------------------------------------------
+     db.query('INSERT INTO notifications (Message) VALUES ("Project deleted email sent");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
   } catch (error) {
       console.error('Error sending email:', error);
       res.status(500).send('Failed to send email');
+      //-------------------------------------------------------------------------------
+     db.query('INSERT INTO notifications (Message) VALUES ("Failed to send project deleted email");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
   }
-});
-//-------------------------------------------------------------------------------------
+});//-------------------------------------------------------------------------------------
 app.post('/sendDeleteEmail', async (req, res) => {
-  const deletedEmployees = req.body.deletedEmployees;
-
-  const mailOptions = {
-    from: 'karthi.blogger.avatar@gmail.com',
-    to: 'karthi.blogger.avatar@gmail.com', // Replace with the recipient's email
-    subject: 'Employees Deleted',
-    html: `
-      <p>The following employees have been deleted:</p>
-      <ul>
-        ${deletedEmployees.map(employee => `<li>${employee.id} - ${employee.name}</li>`).join('')}
-      </ul>
-    `,
-  };
-
   try {
-    await transporter.sendMail(mailOptions);
-    res.status(200).send('Delete email sent successfully!');
+    const { ids } = req.body; // Assuming your frontend sends an array of IDs
+
+    // Assuming ids is an array
+    console.log('Received employee IDs for deletion:', ids);
+
+    // Assuming ids is an array
+    for (const employee of ids) {
+      const { emp_id, emp_name, emp_role, dept_name } = employee;
+
+      const mailOptions = {
+        from: 'karthi.blogger.avatar@gmail.com',
+        to: 'karthi.blogger.avatar@gmail.com',
+        subject: 'Last Mail from the Company',
+        html: `
+          <p>This is your last email from the company.</p>
+          <p>Employee ID: ${emp_id}</p>
+          <p>Employee Name: ${emp_name}</p>
+          <p>Employee Role: ${emp_role}</p>
+          <p>Department: ${dept_name}</p>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+      //console.log(`Delete email sent successfully for Employee ID: ${id}`);
+
+      // Insert notification into the database for success
+      db.query('INSERT INTO notifications (Message) VALUES ("Emp Deleted mail sent successfully!");', (error, results) => {
+        if (error) {
+          console.error('Error executing query:', error);
+        } else {
+          // Successfully inserted notification
+        }
+      });
+    }
+
+    res.status(200).send('Delete emails sent successfully!');
   } catch (error) {
     console.error('Error sending delete email:', error);
+
+    // Insert notification into the database for failure
+    db.query('INSERT INTO notifications (Message) VALUES ("Fail to send emp deleted mail");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+      } else {
+        // Successfully inserted notification
+      }
+    });
+
     res.status(500).send('Failed to send delete email.');
   }
 });
-
 //-------------------------------------------------------------------------------------
 app.post('/sendEditEmail', async (req, res) => {
   try {
     const editedEmployeeDetails = req.body;
-
+    console.log("backend "+editedEmployeeDetails.emp_name);
     const mailOptions = {
       from: 'karthi.blogger.avatar@gmail.com',
       to: 'karthi.blogger.avatar@gmail.com', // Replace with the recipient's email
@@ -439,22 +575,41 @@ app.post('/sendEditEmail', async (req, res) => {
       html: `
         <p>The employee details have been edited:</p>
         <ul>
-          <li>ID: ${editedEmployeeDetails.id}</li>
-          <li>Name: ${editedEmployeeDetails.name}</li>
-          <li>Role: ${editedEmployeeDetails.role}</li>
-          <li>Department: ${editedEmployeeDetails.department}</li>
+          <li>ID: ${editedEmployeeDetails.emp_id}</li>
+          <li>Name: ${editedEmployeeDetails.emp_name}</li>
+          <li>Role: ${editedEmployeeDetails.emp_role}</li>
+          <li>Department: ${editedEmployeeDetails.dept_name}</li>
         </ul>
       `,
     };
 
     await transporter.sendMail(mailOptions);
     res.status(200).send('Edit email sent successfully!');
+    
+    // Insert success notification into the database
+    db.query('INSERT INTO notifications (Message) VALUES ("Emp Edited mail sent successfully!");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+        // Handle success
+      }
+    });
   } catch (error) {
     console.error('Error sending edit email:', error);
     res.status(500).send('Failed to send edit email.');
+    
+    // Insert error notification into the database
+    db.query('INSERT INTO notifications (Message) VALUES ("Emp Edited fail to send mail");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+        // Handle error
+      }
+    });
   }
 });
-
 //-------------------------------------------------------------------------------------
 app.post('/project-approval', async (req, res) => {
   const {  selectedProjectApproval,email } = req.body;
@@ -500,29 +655,48 @@ app.post('/sendProjectAssign', async (req, res) => {
   }
 });
 //--------------------------------------------------------------------------------------
+
 app.post('/sendDeleteDepartmentEmail', async (req, res) => {
   const deletedDepartments = req.body.deletedDepartments;
+
   try {
     deletedDepartments.forEach((department) => {
-      const mailOptions = {
-        from: 'karthi.blogger.avatar@gmail.com',
-        to: 'karthi.blogger.avatar@gmail.com', // Replace with recipient's email
-        subject: 'Department Deleted',
-        text: `The department "${department.name}" has been deleted.`,
-      };
+      // Check if the department is not null or undefined before accessing its properties
+      if (department && department.dept_name) {
+        const mailOptions = {
+          from: 'karthi.blogger.avatar@gmail.com',
+          to: 'karthi.blogger.avatar@gmail.com', // Replace with recipient's email
+          subject: 'Department Deleted',
+          text: `The department "${department.dept_name}" has been deleted.`,
+        };
 
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error('Error sending email:', error);
-        } else {
-          console.log('Delete department email sent:', info.response);
-        }
-      });
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error('Error sending email:', error);
+          } else {
+            console.log('Delete department email sent:', info.response);
+            // Insert success notification into the database
+            db.query('INSERT INTO notifications (Message) VALUES ("Delete department email sent");', (error, results) => {
+              if (error) {
+                console.error('Error executing query:', error);
+              }
+            });
+          }
+        });
+      } else {
+        console.error('Department is null or undefined.');
+      }
     });
 
     res.status(200).send('Delete department email sent successfully!');
   } catch (error) {
     console.error('Error sending delete department email:', error);
+    // Insert error notification into the database
+    db.query('INSERT INTO notifications (Message) VALUES ("Failed to send delete department email.");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+      }
+    });
     res.status(500).send('Failed to send delete department email.');
   }
 });
@@ -530,7 +704,7 @@ app.post('/sendDeleteDepartmentEmail', async (req, res) => {
 //--------------------------------------------------------------------------------------
 app.post('/sendEditDepartmentEmail', async (req, res) => {
   const { name } = req.body; // Extract 'name' from the request body
-
+ 
   try {
     const mailOptions = {
       from: 'karthi.blogger.avatar@gmail.com',
@@ -538,7 +712,7 @@ app.post('/sendEditDepartmentEmail', async (req, res) => {
       subject: 'Department Edited',
       text: `The department "${name}" has been edited.`,
     };
-
+ 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error('Error sending email:', error);
@@ -546,14 +720,79 @@ app.post('/sendEditDepartmentEmail', async (req, res) => {
       } else {
         console.log('Edit department email sent:', info.response);
         res.status(200).send('Edit department email sent successfully!');
+        //-------------------------------------------------------------------------------
+      db.query('INSERT INTO notifications (Message) VALUES ("Edit department email sent successfully!");', (error, results) => {
+        if (error) {
+          console.error('Error executing query:', error);
+          res.status(500).json({ error: 'Error fetching data' });
+        } else {
+         // res.json(results);
+         
+        }
+      });
+      //-------------------------------------------------------------------------------
       }
     });
   } catch (error) {
     console.error('Error sending edit department email:', error);
     res.status(500).send('Failed to send edit department email.');
+     //-------------------------------------------------------------------------------
+     db.query('INSERT INTO notifications (Message) VALUES ("Failed to send edit department email.");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
   }
 });
 
+
+app.post('/sendEditProject', async (req, res) => {
+  const { editedProjectString } = req.body;
+
+  const mailOptions = {
+    from: 'karthi.blogger.avatar@gmail.com',
+    to: 'karthi.blogger.avatar@gmail.com',
+    subject: "The project has been edited",
+    text: `The Edited Project ${editedProjectString}`,
+  };
+ 
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).send('Email sent successfully');
+    //-------------------------------------------------------------------------------
+    db.query('INSERT INTO notifications (Message) VALUES ("Project edited mail sent");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).send('Failed to send email');
+    //-------------------------------------------------------------------------------
+    db.query('INSERT INTO notifications (Message) VALUES ("Failed to send Project edited email");', (error, results) => {
+      if (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error fetching data' });
+      } else {
+       // res.json(results);
+       
+      }
+    });
+    //-------------------------------------------------------------------------------
+  }
+});
+ 
+ 
 //--------------------------------------------------------------------------------------
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

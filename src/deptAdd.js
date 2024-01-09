@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import './deptAdd.css';
+import {useNotification } from './NotificationContext'
+// State for managing success and error messages
+
 
 function DeptAdd() {
   const [departmentData, setDepartmentData] = useState({
@@ -11,6 +14,10 @@ function DeptAdd() {
   const [idError, setIdError] = useState('');
   const [nameError, setNameError] = useState('');
   const [formError, setFormError] = useState('');
+
+  const [showSuccessMessages, setShowSuccessMessages] = useState(false);
+const [showErrorMessage, setShowErrorMessage] = useState(false);
+const { addNotification } = useNotification();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -39,7 +46,7 @@ function DeptAdd() {
 
       if (response.ok) {
         console.log('Department Data Submitted:', departmentData);
-        setShowSuccessMessage(true);
+        setShowSuccessMessages(true);
 
         // Reset form fields and errors
         setDepartmentData({
@@ -60,7 +67,66 @@ function DeptAdd() {
       console.error('Network error:', error);
       setFormError('Network error. Please try again later.');
     }
+
+    // If no errors, send email and show success message
+    try {
+      const response = await sendDepartmentEmail(departmentData.id, departmentData.name);
+      if (response.ok) {
+        setShowSuccessMessage(true);
+        showSuccess();
+        // addNotification('Department Add successfully');
+        // Clear the form and errors
+        setDepartmentData({
+          id: '',
+          name: '',
+        });
+        setIdError('');
+        setNameError('');
+        setFormError('');
+      } else {
+        console.error('Failed to send department email.');
+        showError();
+        // Display success message inside else block
+      }
+    } catch (error) {
+      console.error('Error sending department email:', error);
+      showError();
+      // Display error message inside catch block
+    }
+    
   }
+  
+  
+  async function sendDepartmentEmail(id, name) {
+    const response = await fetch('http://localhost:3001/sendDeptAddEmail', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id,
+        name,
+        email: 'karthi.blogger.avatar@gmail.com', // Replace with recipient's email
+      }),
+    });
+    return response;
+  }
+
+   // Function to display success message
+   const showSuccess = () => {
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000); // Hide success message after 3 seconds
+  };
+ 
+  // Function to display error message
+  const showError = () => {
+    setShowErrorMessage(true);
+    setTimeout(() => {
+      setShowErrorMessage(false);
+    }, 3000); // Hide error message after 3 seconds
+  };
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -130,6 +196,18 @@ function DeptAdd() {
       {showSuccessMessage && (
         <div className="dept-add-success-message">Department details added successfully!</div>
       )}
+
+{showSuccessMessage && (
+          <div className="message-popup success">
+            <p>Email sent successfully!</p>
+          </div>
+        )}
+ 
+        {showErrorMessage && (
+          <div className="message-popup error">
+            <p>Failed to send email.</p>
+          </div>
+        )}
     </div>
   );
 }

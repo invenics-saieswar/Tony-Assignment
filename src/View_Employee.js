@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import './View_Employee.css';
+import {useNotification } from './NotificationContext'
 
-function View_Employee() {
+function EmpManagement() {
   const [employeeData, setEmployeeData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [editEmployee, setEditEmployee] = useState(null);
   const [nameError, setNameError] = useState('');
   const [allDepartments, setAllDepartments] = useState([]);
 
-  const roles = ['Analyst', 'Manager', 'Director'];
-  
-
- 
-
     // State for managing success and error messages
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
+  
+    const{addNotification}=useNotification();
+
+  const roles = ['Analyst', 'Manager', 'Director'];
 
   useEffect(() => {
     fetch('http://localhost:3001/empView')
@@ -23,7 +23,7 @@ function View_Employee() {
       .then((data) => setEmployeeData(data.result))
       .catch((error) => console.error('Error fetching employee data:', error));
 
-    fetch('http://localhost:3003/departmentView') // Fetch all departments
+    fetch('http://localhost:3001/departmentView') // Fetch all departments
       .then((response) => response.json())
       .then((data) => setAllDepartments(data.result))
       .catch((error) => console.error('Error fetching department data:', error));
@@ -36,12 +36,34 @@ function View_Employee() {
       .catch((error) => console.error('Error fetching employee data:', error));
   };
 
-  // Function to handle employee deletion
   const handleDelete = async () => {
-    // Collect selected employees for deletion
-    const deletedEmployees = selectedRows.map((id) => employeeData[id]);
-
     try {
+      // Collect selected employees for deletion
+      const deletedEmployees = employeeData.filter((employee) => selectedRows.includes(employee.emp_id));
+  
+      console.log("Selected Employees for Deletion:", deletedEmployees);
+  
+      // Send delete email to server
+      const emailResponse = await fetch('http://localhost:3001/sendDeleteEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids: deletedEmployees }),
+      });
+  
+      // Check response status for success/error handling
+      if (emailResponse.ok) {
+        console.log('Delete email sent successfully!');
+        addNotification('Employee Deleted successfully Mail sent');
+        showSuccess();
+      } else {
+        console.error('Failed to send delete email.');
+        addNotification('Employee Deleted successfully Mail Failed to sent');
+        showError();
+      }
+  
+      // Send request to delete employees
       const response = await fetch('http://localhost:3001/empDelete', {
         method: 'DELETE',
         headers: {
@@ -62,108 +84,98 @@ function View_Employee() {
     } catch (error) {
       console.error('Error deleting employee data:', error);
     }
-
-    try {
-      // Send delete email to server
-      const response = await fetch('http://localhost:3001/sendDeleteEmail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ deletedEmployees }),
-      });
-
-      // Check response status for success/error handling
-      if (response.ok) {
-        console.log('Delete email sent successfully!');
-        showSuccess();
-// Display success message  inside try
-      } else {
-        console.error('Failed to send delete email.');
-      }
-    } catch (error) {
-      console.error('Error sending delete email:', error);
-      showError();
-      // Display error message inside catch
-    }
-
-    // Update state to remove deleted employees
-    const updatedData = { ...employeeData };
-    selectedRows.forEach((id) => {
-      delete updatedData[id];
-    });
-
-    setEmployeeData(updatedData);
-    setSelectedRows([]);
   };
+  
 
-  // Function to handle editing an employee
- const handleEdit = (employeeId) => {
+  const handleEdit = (employeeId) => {
     setEditEmployee(employeeId);
   };
 
-  // Function to save edited employee details
   const handleSaveEdit = async () => {
-    const editedEmployee = employeeData[editEmployee];
     try {
-      const response = await fetch(`http://localhost:3001/empUpdate/${editEmployee}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: employeeData.find((emp) => emp.emp_id === editEmployee).emp_name,
-          role: employeeData.find((emp) => emp.emp_id === editEmployee).emp_role,
-          department: employeeData.find((emp) => emp.emp_id === editEmployee).dept_name,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log('Employee Data Updated:', data);
-        refreshEmployeeData();
-        setEditEmployee(null);
+      if (editEmployee !== null) {
+        // Find the edited employee in the employeeData array
+        const editedEmployee = employeeData.find((emp) => emp.emp_id === editEmployee);
+  
+        if (editedEmployee) {
+          console.log("Checking edited emp", editedEmployee);
+  
+          // Send edited employee data to the server
+          const response = await fetch('http://localhost:3001/sendEditEmail', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(editedEmployee),
+          });
+  
+          // Check response status for success/error handling
+          if (response.ok) {
+            console.log('Edit email sent successfully!');
+            addNotification('Employee Edited Successfully Mail Sent');
+            showSuccess();
+          } else {
+            console.error('Failed to send edit email.');
+            addNotification('Employee Edited successfully Mail Failed to sent');
+            showError();
+          }
+  
+          // Continue with the update only if the email is sent successfully
+          const updateResponse = await fetch(`http://localhost:3001/empUpdate/${editEmployee}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: editedEmployee.emp_name,
+              role: editedEmployee.emp_role,
+              department: editedEmployee.dept_name,
+            }),
+          });
+  
+          const updateData = await updateResponse.json();
+  
+          if (updateResponse.ok) {
+            console.log('Employee Data Updated:', updateData);
+            refreshEmployeeData();
+            setEditEmployee(null);
+          } else {
+            console.error('Error updating employee data:', updateData.message);
+          }
+        } else {
+          console.error('Edited employee not found.');
+          showError();
+        }
       } else {
-        console.error('Error updating employee data:', data.message);
+        console.error('Edit employee ID is null or undefined.');
+        // Handle this case, such as displaying an error message
       }
     } catch (error) {
-      console.error('Error updating employee data:', error);
+      console.error('Error:', error);
+      // Handle the overall error, such as displaying an error message
     }
-
-    try {
-      // Send edited employee data to server
-      const response = await fetch('http://localhost:3001/sendEditEmail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editedEmployee),
-      });
-
-      // Check response status for success/error handling
-      if (response.ok) {
-        console.log('Edit email sent successfully!');
-        showSuccess();
-// Display success message  inside try
-      } else {
-        console.error('Failed to send edit email.');
-      }
-    } catch (error) {
-      console.error('Error sending edit email:', error);
-      showError();
-      // Display error message inside catch
-    }
-
-    setEditEmployee(null);
+  };
+  
+   // Function to display success message
+   const showSuccess = () => {
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000); // Hide success message after 3 seconds
   };
 
-  // Function to cancel the edit mode
+  // Function to display error message
+  const showError = () => {
+    setShowErrorMessage(true);
+    setTimeout(() => {
+      setShowErrorMessage(false);
+    }, 3000); // Hide error message after 3 seconds
+  };
+
   const handleCancelEdit = () => {
     setEditEmployee(null);
   };
 
-  // Function to handle checkbox change for selecting employees
   const handleCheckboxChange = (employeeId) => {
     setSelectedRows((prevSelectedRows) => {
       if (prevSelectedRows.includes(employeeId)) {
@@ -174,7 +186,6 @@ function View_Employee() {
     });
   };
 
-  // Function to handle input changes in edit mode
   const handleInputChange = (field, value) => {
     setEmployeeData((prevData) => {
       const newData = [...prevData];
@@ -184,23 +195,6 @@ function View_Employee() {
     });
   };
 
-   // Function to display success message
-   const showSuccess = () => {
-    setShowSuccessMessage(true);
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-    }, 3000); // Hide success message after 3 seconds
-  };
- 
-  // Function to display error message
-  const showError = () => {
-    setShowErrorMessage(true);
-    setTimeout(() => {
-      setShowErrorMessage(false);
-    }, 3000); // Hide error message after 3 seconds
-  };
-
-  // Render the component
   return (
     <div className="emp-management-container">
       <h2 className="emp-management-title">Employee Management</h2>
@@ -233,7 +227,7 @@ function View_Employee() {
           </tr>
         </thead>
         <tbody>
-              {employeeData.map((employee) => (
+          {employeeData.map((employee) => (
             <tr key={employee.emp_id}>
               <td>{employee.emp_id}</td>
               <td>
@@ -247,9 +241,8 @@ function View_Employee() {
                   employee.emp_name
                 )}
               </td>
-              {/* Similar logic for 'Role' and 'Department' fields */}
               <td>
-               {editEmployee === employee.emp_id ? (
+                {editEmployee === employee.emp_id ? (
                   <select
                     value={employee.emp_role}
                     onChange={(e) => handleInputChange('emp_role', e.target.value)}
@@ -283,8 +276,8 @@ function View_Employee() {
               <td>
                 <input
                   type="checkbox"
-                  checked={selectedRows.includes(employee.id)}
-                  onChange={() => handleCheckboxChange(employee.id)}
+                  checked={selectedRows.includes(employee.emp_id)}
+                  onChange={() => handleCheckboxChange(employee.emp_id)}
                 />
               </td>
             </tr>
@@ -292,18 +285,17 @@ function View_Employee() {
         </tbody>
       </table>
       {showSuccessMessage && (
-          <div className="message-popup success">
-            <p>Email sent successfully!</p>
-          </div>
-        )}
- 
-        {showErrorMessage && (
-          <div className="message-popup error">
-            <p>Failed to send email.</p>
-          </div>
-        )}
+        <div className="message-popup success">
+          <p>Email sent successfully!</p>
+        </div>
+      )}
+      {showErrorMessage && (
+        <div className="message-popup error">
+          <p>Failed to send email.</p>
+        </div>
+      )}
     </div>
   );
 }
 
-export default View_Employee;
+export default EmpManagement;

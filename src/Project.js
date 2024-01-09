@@ -1,10 +1,87 @@
 // Import React and useState hook
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import './Project.css';
-
+import {useNotification } from './NotificationContext'
 
 // Main Project component
 function Project() {
+    // Assume this code is part of your React component
+    const [oldProjectId, setOldProjectId] = useState('');
+    const [allDepartments, setAllDepartments] = useState([]);
+
+       // State for managing success and error messages
+       const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+       const [showErrorMessage, setShowErrorMessage] = useState(false);
+     
+       const{addNotification}=useNotification();
+
+    const createProject = async () => {
+        const newProjectData = {
+            projectName: 'My Project', // Replace these values with actual project data
+            projectId: '12345',
+            department: 'IT',
+            startDate: '2024-01-10',
+            endDate: '2024-02-10',
+            skillsRequired: ['React', 'Node.js']
+        };
+
+        try {
+            const response = await fetch('http://localhost:3006/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newProjectData)
+            });
+
+            if (response.ok) {
+                console.log('Project created successfully!');
+                // Perform any necessary actions after successful project creation
+            } else {
+                console.error('Failed to create project');
+                // Handle the error scenario
+            }
+        } catch (error) {
+            console.error('Error creating project:', error);
+            // Handle any network-related errors
+        }
+    };
+
+    const retrieveProjects = async () => {
+        try {
+            const response = await fetch('http://localhost:3006/projects');
+
+            if (response.ok) {
+                const projects = await response.json();
+                console.log('Retrieved projects:', projects);
+                setProjectsList(projects);
+                // Use the retrieved projects data in your React component
+            } else {
+                console.error('Failed to retrieve projects');
+                // Handle the error scenario
+            }
+        } catch (error) {
+            console.error('Error retrieving projects:', error);
+            // Handle any network-related errors
+        }
+    };
+
+    // Call these functions as needed in your React component
+    // createProject(); // To create a new project
+    // retrieveProjects(); // To retrieve all projects
+    useEffect(() => {
+        // This will run once when the component mounts
+        retrieveProjects(); // Retrieve projects when the component mounts
+
+        fetch('http://localhost:3006/deptDropdown') // Fetch all departments
+            .then((response) => response.json())
+            .then((data) => setAllDepartments(data.result))
+            .catch((error) => console.error('Error fetching department data:', error));
+
+
+
+    }, []);
+
     // State variables using useState hook
     const [displayedComponent, setDisplayedComponent] = useState(null);
     const [projectsList, setProjectsList] = useState([]);
@@ -38,31 +115,71 @@ function Project() {
         }
     };
     // Function to delete selected projects
-    const handleDeleteSelected = async() => {
-        const newList = projectsList.filter((project, index) => !selectedProjects.includes(index));
-        setProjectsList(newList);
-        setSelectedProjects([]);
-        //------------------------------------------------------------
+    const handleDeleteSelected = async () => {
+        const selectedProjectIds = projectsList
+            .filter((project, index) => selectedProjects.includes(index))
+            .map((selectedProject) => selectedProject.projectId); // Change this to 'projectId'
+console.log(selectedProjectIds);
+            const projectsData = selectedProjectIds
+      .map(project => (
+        `
+         ProjectID: ${selectedProjectIds}
+        `
+      ))
+      .join("\n");
+
+
+            try {
+                const response = await fetch('http://localhost:3001/sendDeleteProject', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ body: projectsData }),
+                 
+                });
+           
+                if (response.ok) {
+                 
+                  showSuccess();
+                } else {
+                 
+                  showError();
+                }
+              } catch (error) {
+                console.error('Error:', error);
+               
+                showError();
+              }
+
+
         try {
-            const response = await fetch('http://localhost:3001/sendEditProject', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(projectsList),
+            const response = await fetch('http://localhost:3006/deleteProjects', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selectedProjectIds }) // Send the list of selected project IDs to delete
             });
-        
+
             if (response.ok) {
-              alert('Project updated successfully! Email sent.');
+                // Assuming the deletion in the backend was successful
+                const newList = projectsList.filter((project) => !selectedProjectIds.includes(project.projectId));
+                setProjectsList(newList);
+                setSelectedProjects([]);
+                console.log('Projects deleted from the database successfully!');
+                // Perform any necessary actions after successful deletion from the database
             } else {
-              alert('Project updated successfully! Failed to send email.');
+                console.error('Failed to delete projects from the database');
+                // Handle the error scenario for database deletion
             }
-          } catch (error) {
-            console.error('Error:', error);
-            alert('Project updated successfully! Failed to send email.');
-          }
-        //------------------------------------------------------------
+        } catch (error) {
+            console.error('Error deleting projects from the database:', error);
+            // Handle any network-related errors for deletion
+        }
     };
+
+
     const handleStartEditing = (index) => {
         setEditingIndex(index);
         const projectToEdit = projectsList[index];
@@ -70,46 +187,91 @@ function Project() {
             ...projectData,
             ...projectToEdit // Update projectData with the project being edited
         });
+
+        // Store the oldProjectId in state
+        setOldProjectId(projectToEdit.projectId);
     };
 
+
     // Function to save edits when editing a project
-    const handleSaveEditing = async (index) => {
+    const handleSaveEditing = async (index, newProjectId) => {
         console.log(`Saving edits for project at index ${index}`);
         setEditingIndex(null);
-      
-        const updatedList = projectsList.map((project, i) => {
-          if (i === index) {
-            return {
-              ...project,
-              ...projectData // Save changes from projectData to the project being edited
-            };
-          }
-          return project;
-        });
-      
+
+        // Get the updated project
+        const updatedProject = projectsList[index];
+
+        // Assuming you have an 'oldProjectId' for the update
+        // const oldProjectId = updatedProject.projectId; // Current project ID
+
+        // Convert startDate and endDate to YYYY-MM-DD format
+        updatedProject.startDate = updatedProject.startDate.split('T')[0];
+        updatedProject.endDate = updatedProject.endDate.split('T')[0];
+
+        const requestBody = {
+            projectName: updatedProject.projectName,
+            projectId: newProjectId, // Use the new project ID for the update
+            department: updatedProject.department,
+            startDate: updatedProject.startDate,
+            endDate: updatedProject.endDate,
+            skillsRequired: updatedProject.skillsRequired // Assuming this is an array of skills
+            // Add other properties as needed
+        };
+
         try {
+            const editedProjectString = `
+            projectName:${updatedProject.projectName},
+            projectId: ${newProjectId}, 
+            department: ${updatedProject.department},
+            startDate: ${updatedProject.startDate},
+            endDate: ${updatedProject.endDate},
+            skillsRequired: ${updatedProject.skillsRequired}, 
+            
+          `;
+ 
+          console.log('Edited Project String:', editedProjectString); // Log the edited project object
           const response = await fetch('http://localhost:3001/sendEditProject', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(updatedList[index]),
+            body: JSON.stringify({ editedProjectString }), // Send the stringified version
           });
-      
+     
           if (response.ok) {
-            alert('Project updated successfully! Email sent.');
+            addNotification('Project Edited successfully. Mail Sent');
+            showSuccess();
           } else {
             alert('Project updated successfully! Failed to send email.');
           }
         } catch (error) {
           console.error('Error:', error);
-          alert('Project updated successfully! Failed to send email.');
+          addNotification('Project Edited successfully. Mail Failed to Sent');
+          showError();
         }
-      
 
-       
-        setProjectsList(updatedList);
+        try {
+            const response = await fetch(`http://localhost:3006/updateProject/${oldProjectId}/${newProjectId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody) // Send a properly formatted object
+
+            });
+
+            if (response.ok) {
+                retrieveProjects(); // Refresh the projects list after successful update
+                console.log('Project updated successfully!');
+            } else {
+                console.error('Failed to update project');
+            }
+        } catch (error) {
+            console.error('Error updating project:', error);
+        }
     };
+
+
 
     const handleEditInputChange = (e, index, fieldName) => {
         const updatedList = projectsList.map((project, i) => {
@@ -163,6 +325,11 @@ function Project() {
     // Function to handle input changes in projectData state
     const handleChange = (e) => {
         const { name, value } = e.target;
+        const selectedDepartment = e.target.value;
+        setProjectData({
+            ...projectData,
+            department: selectedDepartment  // Update the department in projectData state
+        });
         setProjectData({
             ...projectData,
             [name]: value
@@ -268,13 +435,15 @@ function Project() {
             });
 
             if (response.ok) {
-                alert('Project created successfully! Email sent.');
+               // alert('Project created successfully! Email sent.');
+               showSuccess();
             } else {
-                alert('Project created successfully! Failed to send email.');
+              //  alert('Project created successfully! Failed to send email.');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Project created successfully! Failed to send email.');
+           // alert('Project created successfully! Failed to send email.');
+           showError();
         }
     };
 
@@ -291,19 +460,35 @@ function Project() {
         }
     };
 
+     // Function to display success message
+   const showSuccess = () => {
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000); // Hide success message after 3 seconds
+  };
+
+  // Function to display error message
+  const showError = () => {
+    setShowErrorMessage(true);
+    setTimeout(() => {
+      setShowErrorMessage(false);
+    }, 3000); // Hide error message after 3 seconds
+  };
+
     const handleAddSkill = () => {
         const trimmedSkill = projectData.newSkill.trim();
-        if (trimmedSkill !== "") {
-            if (/^[a-zA-Z\s]*$/.test(trimmedSkill)) { // Validate for alphabets and spaces
-                setProjectData({
-                    ...projectData,
-                    skillsRequired: [...projectData.skillsRequired, trimmedSkill],
-                    newSkill: ""
-                });
-                setErrors({ ...errors, skillsError: "" }); // Clear skills error after successfully adding a valid skill
-            } else {
-                setErrors({ ...errors, skillsError: "No special characters allowed" });
-            }
+        const isValidSkill = /^[a-zA-Z\s]*$/.test(trimmedSkill);
+
+        if (trimmedSkill !== "" && isValidSkill) {
+            setProjectData({
+                ...projectData,
+                skillsRequired: [...projectData.skillsRequired, trimmedSkill],
+                newSkill: ""
+            });
+            setErrors({ ...errors, skillsError: "" }); // Clear skills error after successfully adding a valid skill
+        } else {
+            setErrors({ ...errors, skillsError: "Only alphabets and spaces are allowed" });
         }
     };
 
@@ -321,35 +506,55 @@ function Project() {
         const isValid = validateForm();
 
         if (isValid) {
-            // Rest of your logic for creating a project...
-            const newProject = {
+            let skillsArray = projectData.skillsRequired;
+
+            if (!Array.isArray(skillsArray)) {
+                skillsArray = skillsArray.split(",").map(skill => skill.trim());
+            }
+
+            const newProjectData = {
                 projectName: projectData.projectName,
                 projectId: projectData.projectId,
                 department: projectData.department,
                 startDate: projectData.startDate,
                 endDate: projectData.endDate,
-                skillsRequired: projectData.skillsRequired
+                skillsRequired: skillsArray // Ensure skillsRequired is an array
             };
 
-            setProjectsList([...projectsList, newProject]);
+            try {
+                const response = await fetch('http://localhost:3006/createProject', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newProjectData),
+                });
 
-            setProjectData({
-                projectName: "",
-                projectId: "",
-                department: "",
-                startDate: "",
-                endDate: "",
-                skillsRequired: [],
-                newSkill: ""
-            });
+                if (response.ok) {
+                    setProjectData({
+                        projectName: "",
+                        projectId: "",
+                        department: "",
+                        startDate: "",
+                        endDate: "",
+                        skillsRequired: [],
+                        newSkill: ""
+                    });
 
-            sendEmail(newProject);
-
-            alert("Project created successfully!");
+                    sendEmail(newProjectData);
+                   alert("Project created successfully!");
+                } else {
+                   alert('Failed to create project');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating project');
+            }
         } else {
-            alert('Please check all the fields.');
+           alert('Please check all the fields.');
         }
     };
+
 
     const validateForm = () => {
         const {
@@ -396,9 +601,10 @@ function Project() {
                                 type="text"
                                 name="projectName"
                                 value={projectData.projectName}
-                                onChange={handleChange}
+                                onChange={handleChange} // Ensure 'handleChange' is properly bound and receives the event object
                                 className="project-name-input unique-projectName-input"
                             />
+
                             {errors.projectNameError && <p className="error-message">{errors.projectNameError}</p>}
                         </label>
                         {/* Other input fields */}
@@ -423,10 +629,11 @@ function Project() {
                                 className="department-input unique-department-input"
                             >
                                 <option value="">Select Department</option>
-                                <option value="Automation">Automation</option>
-                                <option value="Digital SAP">Digital SAP</option>
-                                <option value="Innovation Incentives">Innovation Incentives</option>
-                                <option value="App Dev Banking">App Dev Banking</option>
+                                {allDepartments.map((dept) => (
+                                    <option key={dept.dept_id} value={dept.dept_name}>
+                                        {dept.dept_name}
+                                    </option>
+                                ))}
                             </select>
                         </label>
                         {/* ... */}
@@ -470,6 +677,7 @@ function Project() {
                                 placeholder="Type and press Enter"
                                 className="skills-required-input"
                             />
+
                             {errors.skillsError && <p className="error-message">{errors.skillsError}</p>}
                         </label>
                         {/* ... */}
@@ -485,7 +693,16 @@ function Project() {
                         </div>
                         <br />
                         <button onClick={handleCreateProject} className="create-button unique-create-button">Create Project</button>
-
+                        {showSuccessMessage && (
+        <div className="message-popup success">
+          <p>Email sent successfully!</p>
+        </div>
+      )}
+      {showErrorMessage && (
+        <div className="message-popup error">
+          <p>Failed to send email.</p>
+        </div>
+      )}
                     </div>
                 ); case "ListOfProjects":
                 return (
@@ -555,40 +772,41 @@ function Project() {
                                             {editingIndex === index ? (
                                                 <input
                                                     type="date"
-                                                    value={project.startDate}
+                                                    value={project.startDate.split('T')[0]} // Extracting date part only
                                                     onChange={(e) => handleEditInputChange(e, index, "startDate")}
                                                 />
                                             ) : (
-                                                project.startDate
+                                                project.startDate.split('T')[0] // Extracting date part only
                                             )}
                                         </td>
                                         <td>
                                             {editingIndex === index ? (
                                                 <input
                                                     type="date"
-                                                    value={project.endDate}
+                                                    value={project.endDate.split('T')[0]} // Extracting date part only
                                                     onChange={(e) => handleEditInputChange(e, index, "endDate")}
                                                 />
                                             ) : (
-                                                project.endDate
+                                                project.endDate.split('T')[0] // Extracting date part only
                                             )}
                                         </td>
+
                                         <td>
                                             {editingIndex === index ? (
                                                 <input
                                                     type="text"
-                                                    value={projectData.skillsRequired.join(",")}
+                                                    value={projectData.skillsRequired}
                                                     onChange={(e) => handleEditInputChange(e, index, "skillsRequired")}
                                                 />
                                             ) : (
-                                                project.skillsRequired.join(", ")
+                                                project.skillsRequired
                                             )}
                                         </td>
 
                                         {/* Edit button */}
                                         <td>
                                             {editingIndex === index ? (
-                                                <button onClick={() => handleSaveEditing(index)} className="save-project-button unique-save-project-button">Save</button>
+                                                <button onClick={() => handleSaveEditing(index, project.projectId)} className="save-project-button unique-save-project-button">Save</button>
                                             ) : (
                                                 <button onClick={() => handleStartEditing(index)} className="edit-project-button unique-edit-project-button">Edit</button>
                                             )}
@@ -597,58 +815,21 @@ function Project() {
                                 ))}
                             </tbody>
                         </table>
+                        {showSuccessMessage && (
+        <div className="message-popup success">
+          <p>Email sent successfully!</p>
+        </div>
+      )}
+      {showErrorMessage && (
+        <div className="message-popup error">
+          <p>Failed to send email.</p>
+        </div>
+      )}
                     </div>
                 );
 
             default: return null
-            // return (
-            //     <div className="list-of-projects-container">
-            //         {/* Your code for List of Projects component */}
-            //         {/* ... */}
-            //         <h1 className="list-of-projects-title">List of Projects</h1>
-            //         <table className="projects-table unique-projects-table">
-            //             <thead>
-            //                 <tr>
-            //                     <th>Project Name</th>
-            //                     <th>Project ID</th>
-            //                     <th>Department</th>
-            //                     <th>Start Date</th>
-            //                     <th>End Date</th>
-            //                     <th>Skills Required</th>
-            //                 </tr>
-            //             </thead>
-            //             <tbody>
-            //                 {projectsList.map((project, index) => (
-            //                     <tr key={index}>
-            //                         <td>{project.projectName}</td>
-            //                         <td>{project.projectId}</td>
-            //                         <td>{project.department}</td>
-            //                         <td>{project.startDate}</td>
-            //                         <td>{project.endDate}</td>
-            //                         <td>{project.skillsRequired.join(", ")}</td>
-            //                     </tr>
-            //                 ))}
-            //             </tbody>
-            //             <tbody>
-            //                 {projectsList && projectsList.length > 0 && projectsList.map((project, index) => (
-            //                     <tr key={index}>
-            //                         <td>{project.projectName}</td>
-            //                         <td>{project.projectId}</td>
-            //                         <td>{project.department}</td>
-            //                         <td>{project.startDate}</td>
-            //                         <td>{project.endDate}</td>
-            //                         <td>{project.skillsRequired.join(", ")}</td>
-            //                         <td>
-            //                             {/* Your actions */}
-            //                             {/* ... */}
-            //                         </td>
-            //                     </tr>
-            //                 ))}
-            //             </tbody>
 
-            //         </table>
-            //     </div>
-            // );
         }
     };
 
@@ -662,6 +843,7 @@ function Project() {
                 <button onClick={showListOfProjects} className="list-of-projects-button unique-list-of-projects-button">List of Projects</button>
             </div>
             {/* Component container to render the appropriate component */}
+
 
             <div className="component-container"> {renderComponent()}</div>
         </div>
