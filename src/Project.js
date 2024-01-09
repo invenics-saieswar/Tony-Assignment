@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from "react";
 import './Project.css';
 
-
 // Main Project component
 function Project() {
     // Assume this code is part of your React component
+    const [oldProjectId, setOldProjectId] = useState('');
+    const [allDepartments, setAllDepartments] = useState([]);
 
     const createProject = async () => {
         const newProjectData = {
@@ -64,6 +65,14 @@ function Project() {
     useEffect(() => {
         // This will run once when the component mounts
         retrieveProjects(); // Retrieve projects when the component mounts
+
+        fetch('http://localhost:3006/deptDropdown') // Fetch all departments
+            .then((response) => response.json())
+            .then((data) => setAllDepartments(data.result))
+            .catch((error) => console.error('Error fetching department data:', error));
+
+
+
     }, []);
 
     // State variables using useState hook
@@ -138,25 +147,45 @@ function Project() {
             ...projectData,
             ...projectToEdit // Update projectData with the project being edited
         });
+
+        // Store the oldProjectId in state
+        setOldProjectId(projectToEdit.projectId);
     };
 
+
     // Function to save edits when editing a project
-    const handleSaveEditing = async (index) => {
+    const handleSaveEditing = async (index, newProjectId) => {
         console.log(`Saving edits for project at index ${index}`);
         setEditingIndex(null);
 
         // Get the updated project
         const updatedProject = projectsList[index];
+
+        // Assuming you have an 'oldProjectId' for the update
+        // const oldProjectId = updatedProject.projectId; // Current project ID
+
         // Convert startDate and endDate to YYYY-MM-DD format
         updatedProject.startDate = updatedProject.startDate.split('T')[0];
         updatedProject.endDate = updatedProject.endDate.split('T')[0];
+
+        const requestBody = {
+            projectName: updatedProject.projectName,
+            projectId: newProjectId, // Use the new project ID for the update
+            department: updatedProject.department,
+            startDate: updatedProject.startDate,
+            endDate: updatedProject.endDate,
+            skillsRequired: updatedProject.skillsRequired // Assuming this is an array of skills
+            // Add other properties as needed
+        };
+
         try {
-            const response = await fetch(`http://localhost:3006/updateProject/${updatedProject.projectId}`, {
+            const response = await fetch(`http://localhost:3006/updateProject/${oldProjectId}/${newProjectId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(updatedProject)
+                body: JSON.stringify(requestBody) // Send a properly formatted object
+
             });
 
             if (response.ok) {
@@ -169,6 +198,8 @@ function Project() {
             console.error('Error updating project:', error);
         }
     };
+
+
 
     const handleEditInputChange = (e, index, fieldName) => {
         const updatedList = projectsList.map((project, i) => {
@@ -222,6 +253,11 @@ function Project() {
     // Function to handle input changes in projectData state
     const handleChange = (e) => {
         const { name, value } = e.target;
+        const selectedDepartment = e.target.value;
+        setProjectData({
+            ...projectData,
+            department: selectedDepartment  // Update the department in projectData state
+        });
         setProjectData({
             ...projectData,
             [name]: value
@@ -352,17 +388,17 @@ function Project() {
 
     const handleAddSkill = () => {
         const trimmedSkill = projectData.newSkill.trim();
-        if (trimmedSkill !== "") {
-            if (/^[a-zA-Z\s]*$/.test(trimmedSkill)) { // Validate for alphabets and spaces
-                setProjectData({
-                    ...projectData,
-                    skillsRequired: [...projectData.skillsRequired, trimmedSkill],
-                    newSkill: ""
-                });
-                setErrors({ ...errors, skillsError: "" }); // Clear skills error after successfully adding a valid skill
-            } else {
-                setErrors({ ...errors, skillsError: "No special characters allowed" });
-            }
+        const isValidSkill = /^[a-zA-Z\s]*$/.test(trimmedSkill);
+
+        if (trimmedSkill !== "" && isValidSkill) {
+            setProjectData({
+                ...projectData,
+                skillsRequired: [...projectData.skillsRequired, trimmedSkill],
+                newSkill: ""
+            });
+            setErrors({ ...errors, skillsError: "" }); // Clear skills error after successfully adding a valid skill
+        } else {
+            setErrors({ ...errors, skillsError: "Only alphabets and spaces are allowed" });
         }
     };
 
@@ -380,13 +416,19 @@ function Project() {
         const isValid = validateForm();
 
         if (isValid) {
+            let skillsArray = projectData.skillsRequired;
+
+            if (!Array.isArray(skillsArray)) {
+                skillsArray = skillsArray.split(",").map(skill => skill.trim());
+            }
+
             const newProjectData = {
                 projectName: projectData.projectName,
                 projectId: projectData.projectId,
                 department: projectData.department,
                 startDate: projectData.startDate,
                 endDate: projectData.endDate,
-                skillsRequired: projectData.skillsRequired
+                skillsRequired: skillsArray // Ensure skillsRequired is an array
             };
 
             try {
@@ -399,8 +441,6 @@ function Project() {
                 });
 
                 if (response.ok) {
-                    // Project created successfully in the backend
-                    // Update frontend or handle as needed
                     setProjectData({
                         projectName: "",
                         projectId: "",
@@ -415,17 +455,16 @@ function Project() {
                     alert("Project created successfully!");
                 } else {
                     alert('Failed to create project');
-                    // Handle the error scenario
                 }
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error creating project');
-                // Handle any network-related errors
             }
         } else {
             alert('Please check all the fields.');
         }
     };
+
 
     const validateForm = () => {
         const {
@@ -472,9 +511,10 @@ function Project() {
                                 type="text"
                                 name="projectName"
                                 value={projectData.projectName}
-                                onChange={handleChange}
+                                onChange={handleChange} // Ensure 'handleChange' is properly bound and receives the event object
                                 className="project-name-input unique-projectName-input"
                             />
+
                             {errors.projectNameError && <p className="error-message">{errors.projectNameError}</p>}
                         </label>
                         {/* Other input fields */}
@@ -499,10 +539,11 @@ function Project() {
                                 className="department-input unique-department-input"
                             >
                                 <option value="">Select Department</option>
-                                <option value="Automation">Automation</option>
-                                <option value="Digital SAP">Digital SAP</option>
-                                <option value="Innovation Incentives">Innovation Incentives</option>
-                                <option value="App Dev Banking">App Dev Banking</option>
+                                {allDepartments.map((dept) => (
+                                    <option key={dept.dept_id} value={dept.dept_name}>
+                                        {dept.dept_name}
+                                    </option>
+                                ))}
                             </select>
                         </label>
                         {/* ... */}
@@ -546,6 +587,7 @@ function Project() {
                                 placeholder="Type and press Enter"
                                 className="skills-required-input"
                             />
+
                             {errors.skillsError && <p className="error-message">{errors.skillsError}</p>}
                         </label>
                         {/* ... */}
@@ -665,7 +707,7 @@ function Project() {
                                         {/* Edit button */}
                                         <td>
                                             {editingIndex === index ? (
-                                                <button onClick={() => handleSaveEditing(index)} className="save-project-button unique-save-project-button">Save</button>
+                                                <button onClick={() => handleSaveEditing(index, project.projectId)} className="save-project-button unique-save-project-button">Save</button>
                                             ) : (
                                                 <button onClick={() => handleStartEditing(index)} className="edit-project-button unique-edit-project-button">Edit</button>
                                             )}
@@ -700,3 +742,4 @@ function Project() {
 }
 
 export default Project;
+

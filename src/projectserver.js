@@ -28,35 +28,53 @@ db.connect((err) => {
     }
     console.log('Connected to the database');
 });
-
-// Endpoint to handle creating a new project
 app.post('/createProject', (req, res) => {
-    const newProject = req.body;
+    const newProjectData = req.body;
 
-    db.query('INSERT INTO projects_list SET ?', newProject, (error, results) => {
-        if (error) {
-            console.error('Error creating project:', error);
-            res.status(500).json({ message: 'Failed to create project' });
-            return;
+    const { projectName, projectId, department, startDate, endDate, skillsRequired } = newProjectData;
+
+    const query = `
+        INSERT INTO projects_list
+        SET 
+            projectName = ?,
+            projectId = ?,
+            department =?,
+            dept_id = (SELECT dept_id FROM department WHERE dept_name = ?),
+            startDate = ?,
+            endDate = ?,
+            skillsRequired = ?
+    `;
+
+    const skills = Array.isArray(skillsRequired) ? skillsRequired.join(', ') : '';
+
+    db.query(
+        query,
+        [projectName, projectId, department, department, startDate, endDate, skills],
+        (error, results) => {
+            if (error) {
+                console.error('Error creating project:', error);
+                res.status(500).json({ message: 'Failed to create project', error: error.message });
+                return;
+            }
+            console.log('Project created:', results);
+            res.status(201).json({ message: 'Project created successfully' });
         }
-        console.log('New project created:', results);
-        res.status(200).json({ message: 'Project created successfully' });
-    });
+    );
 });
 
 app.post('/projects_list', (req, res) => {
     const { projectName, projectId, department, startDate, endDate, skillsRequired } = req.body;
-    const sql = "INSERT INTO projects_list (projectName, projectId, department, startDate, endDate, skillsRequired) VALUES (?, ?, ?, ?, ?, ?)";
+    const sql = "INSERT INTO projects_list (projectName, projectId, dept_id, startDate, endDate, skillsRequired) VALUES (?, ?, (SELECT dept_id FROM department WHERE dept_name = ?), ?, ?)";
     db.query(sql, [projectName, projectId, department, startDate, endDate, skillsRequired], (err) => {
         if (err) {
-            console.log("error");
-            console.error('Error adding skills:', err);
+            console.error('Error adding project:', err);
             res.status(500).json({ message: 'Internal Server Error' });
             return;
         }
         res.json({ message: 'Project added successfully' });
     });
 });
+
 
 //Endpoint to retrieve all projects
 app.get('/projects', (req, res) => {
@@ -85,24 +103,40 @@ app.get('/projects_list/search', (req, res) => {
     });
 });
 
-// Assuming this is your backend code for updating the project
-app.put('/updateProject/:projectId', (req, res) => {
-    const projectId = req.params.projectId;
+app.put('/updateProject/:oldProjectId/:newProjectId', (req, res) => {
+    const oldProjectId = req.params.oldProjectId;
+    const newProjectId = req.params.newProjectId;
     const updatedProject = req.body;
+    console.log("aaaaaaaaaaa" + oldProjectId, newProjectId)
 
-    db.query('UPDATE projects_list SET ? WHERE projectId = ?', [updatedProject, projectId], (error, results) => {
-        if (error) {
-            console.error('Error updating project:', error);
-            res.status(500).json({ message: 'Failed to update project', error: error.message });
-            return;
+    // const skills = Array.isArray(updatedProject.skillsRequired) ? updatedProject.skillsRequired.join(', ') : '';
+
+    // updatedProject.skillsRequired = skills;
+
+    db.query(
+        'UPDATE projects_list SET projectName = ?, department = ?, startDate = ?, endDate = ?, projectId = ? WHERE projectId = ?',
+        [
+            updatedProject.projectName,
+            updatedProject.department,
+            updatedProject.startDate,
+            updatedProject.endDate,
+            newProjectId, // Updated project ID
+            oldProjectId, // Old project ID
+        ],
+        (error, results) => {
+            if (error) {
+                console.error('Error updating project:', error);
+                res.status(500).json({ message: 'Failed to update project', error: error.message });
+                return;
+            }
+            if (results.affectedRows === 0) {
+                res.status(404).json({ message: 'Project not found' });
+                return;
+            }
+            console.log('Project updated:', results);
+            res.status(200).json({ message: 'Project updated successfully' });
         }
-        if (results.affectedRows === 0) {
-            res.status(404).json({ message: 'Project not found' });
-            return;
-        }
-        console.log('Project updated:', results);
-        res.status(200).json({ message: 'Project updated successfully' });
-    });
+    );
 });
 
 // Express route to handle project deletion
@@ -125,6 +159,19 @@ app.delete('/deleteProjects', (req, res) => {
 
         console.log('Projects deleted from the database successfully!');
         res.sendStatus(200); // Send a success status code (e.g., 200) on successful deletion
+    });
+});
+
+//department dropdown
+app.get('/deptDropdown', (req, res) => { //joining dept and emp table
+    const sql = "SELECT  pl.projectName, pl.projectId, pl.startDate, pl.endDate, pl.skillsRequired, d.dept_id, d.dept_name FROM projects_list pl LEFT JOIN department d ON pl.dept_id = d.dept_id UNION SELECT pl.projectName, pl.projectId, pl.startDate, pl.endDate, pl.skillsRequired, d.dept_id, d.dept_name FROM projects_list pl RIGHT JOIN department d ON pl.dept_id = d.dept_id;"
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error retrieving department dropdown data:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({ result });
     });
 });
 

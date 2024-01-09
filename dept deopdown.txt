@@ -1,0 +1,14 @@
+SELECT pl.id, pl.projectName, pl.projectId, pl.startDate, pl.endDate, pl.skillsRequired, d.dept_id, d.dept_name FROM projects_list pl LEFT JOIN department d ON pl.dept_id = d.dept_id UNION SELECT pl.id, pl.projectName, pl.projectId, pl.startDate, pl.endDate, pl.skillsRequired, d.dept_id, d.dept_name FROM projects_list pl RIGHT JOIN department d ON pl.dept_id = d.dept_id;
+
+
+app.get('/deptDropdown', (req, res) => { //joining dept and emp table
+    const sql = "SELECT pl.id, pl.projectName, pl.projectId, pl.startDate, pl.endDate, pl.skillsRequired, d.dept_id, d.dept_name FROM projects_list pl LEFT JOIN department d ON pl.dept_id = d.dept_id UNION SELECT pl.id, pl.projectName, pl.projectId, pl.startDate, pl.endDate, pl.skillsRequired, d.dept_id, d.dept_name FROM projects_list pl RIGHT JOIN department d ON pl.dept_id = d.dept_id;"
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error retrieving department dropdown data:', err);
+            res.status(500).json({ message: 'Internal Server Error' });
+            return;
+        }
+        res.json({ result });
+    });
+});
