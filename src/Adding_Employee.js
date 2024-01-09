@@ -15,11 +15,16 @@ function EmpAdd() {
   const [formError, setFormError] = useState('');
   const [departmentOptions, setDepartmentOptions] = useState([]);
 
+
   // State for managing success and error messages
   const [showSuccessMessages, setShowSuccessMessages] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   const{addNotification}=useNotification();
+
+
+  
+
 
   const roles = ['Director', 'Manager', 'Analyst'];
 
