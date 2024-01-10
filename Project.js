@@ -1,8 +1,8 @@
 // Import React and useState hook
 import React, { useState } from "react";
 import './Project.css';
- 
- 
+
+
 // Main Project component
 function Project() {
     // State variables using useState hook
@@ -38,12 +38,31 @@ function Project() {
         }
     };
     // Function to delete selected projects
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async() => {
         const newList = projectsList.filter((project, index) => !selectedProjects.includes(index));
         setProjectsList(newList);
         setSelectedProjects([]);
+        //------------------------------------------------------------
+        try {
+            const response = await fetch('http://localhost:3001/sendEditProject', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(projectsList),
+            });
+        
+            if (response.ok) {
+              alert('Project updated successfully! Email sent.');
+            } else {
+              alert('Project updated successfully! Failed to send email.');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            alert('Project updated successfully! Failed to send email.');
+          }
+        //------------------------------------------------------------
     };
- 
     const handleStartEditing = (index) => {
         setEditingIndex(index);
         const projectToEdit = projectsList[index];
@@ -52,25 +71,46 @@ function Project() {
             ...projectToEdit // Update projectData with the project being edited
         });
     };
- 
+
     // Function to save edits when editing a project
-    const handleSaveEditing = (index) => {
+    const handleSaveEditing = async (index) => {
         console.log(`Saving edits for project at index ${index}`);
         setEditingIndex(null);
- 
+      
         const updatedList = projectsList.map((project, i) => {
-            if (i === index) {
-                return {
-                    ...project,
-                    ...projectData // Save changes from projectData to the project being edited
-                };
-            }
-            return project;
+          if (i === index) {
+            return {
+              ...project,
+              ...projectData // Save changes from projectData to the project being edited
+            };
+          }
+          return project;
         });
- 
+      
+        try {
+          const response = await fetch('http://localhost:3001/sendEditProject', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedList[index]),
+          });
+      
+          if (response.ok) {
+            alert('Project updated successfully! Email sent.');
+          } else {
+            alert('Project updated successfully! Failed to send email.');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Project updated successfully! Failed to send email.');
+        }
+      
+
+       
         setProjectsList(updatedList);
     };
- 
+
     const handleEditInputChange = (e, index, fieldName) => {
         const updatedList = projectsList.map((project, i) => {
             if (i === index) {
@@ -89,9 +129,9 @@ function Project() {
             }
             return project;
         });
- 
+
         setProjectsList(updatedList);
- 
+
         // Update projectData if the editingIndex matches the index being edited
         if (editingIndex === index) {
             if (fieldName === "skillsRequired") {
@@ -108,18 +148,18 @@ function Project() {
             }
         }
     };
- 
- 
+
+
     // Function to display the Create Project component
     const showCreateProject = () => {
         setDisplayedComponent("CreateProject");
     };
- 
+
     // Function to display the List of Projects component
     const showListOfProjects = () => {
         setDisplayedComponent("ListOfProjects");
     };
- 
+
     // Function to handle input changes in projectData state
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -129,7 +169,7 @@ function Project() {
         });
         validateInput(name, value); // Validate the input on each change
     };
- 
+
     // Function to validate input fields based on their names and values
     const validateInput = (name, value) => {
         switch (name) {
@@ -163,7 +203,7 @@ function Project() {
                 // Subtract one day from the selected start date
                 today.setDate(today.getDate() - 1);
                 const isValidStartDate = selectedStartDate >= today;
- 
+
                 if (!isValidStartDate) {
                     setErrors({ ...errors, startDateError: "No past date allowed." });
                 } else {
@@ -173,7 +213,7 @@ function Project() {
             case "endDate":
                 const selectedEndDate = new Date(value);
                 const isValidEndDate = selectedEndDate >= new Date(projectData.startDate);
- 
+
                 if (!isValidEndDate) {
                     setErrors({ ...errors, endDateError: "End date should not be before start date." });
                 } else {
@@ -192,15 +232,15 @@ function Project() {
                 break;
         }
     };
- 
+
     const validateDate = (startDate, endDate) => {
         const today = new Date();
         const selectedStartDate = new Date(startDate);
         const selectedEndDate = new Date(endDate);
- 
+
         const isStartDateValid = selectedStartDate >= today;
         const isEndDateValid = selectedEndDate >= selectedStartDate;
- 
+
         return {
             isStartDateValid,
             isEndDateValid
@@ -217,7 +257,7 @@ function Project() {
             End Date: ${newProject.endDate}
             Skills Required: ${newProject.skillsRequired.join(", ")}`
         };
- 
+
         try {
             const response = await fetch('http://localhost:3001/sendCreateProject', {
                 method: 'POST',
@@ -226,7 +266,7 @@ function Project() {
                 },
                 body: JSON.stringify(emailDetails),
             });
- 
+
             if (response.ok) {
                 alert('Project created successfully! Email sent.');
             } else {
@@ -237,7 +277,7 @@ function Project() {
             alert('Project created successfully! Failed to send email.');
         }
     };
- 
+
     const handleSkillInputChange = (e) => {
         const value = e.target.value;
         if (/^[a-zA-Z\s]*$/.test(value) || value === "") { // Validate for alphabets and spaces or an empty string
@@ -250,7 +290,7 @@ function Project() {
             setErrors({ ...errors, skillsError: "No special characters allowed" });
         }
     };
- 
+
     const handleAddSkill = () => {
         const trimmedSkill = projectData.newSkill.trim();
         if (trimmedSkill !== "") {
@@ -266,8 +306,8 @@ function Project() {
             }
         }
     };
- 
- 
+
+
     const handleDeleteSkill = (skillToDelete) => () => {
         setProjectData({
             ...projectData,
@@ -276,10 +316,10 @@ function Project() {
             )
         });
     };
- 
+
     const handleCreateProject = async () => {
         const isValid = validateForm();
- 
+
         if (isValid) {
             // Rest of your logic for creating a project...
             const newProject = {
@@ -290,9 +330,9 @@ function Project() {
                 endDate: projectData.endDate,
                 skillsRequired: projectData.skillsRequired
             };
- 
+
             setProjectsList([...projectsList, newProject]);
- 
+
             setProjectData({
                 projectName: "",
                 projectId: "",
@@ -302,15 +342,15 @@ function Project() {
                 skillsRequired: [],
                 newSkill: ""
             });
- 
+
             sendEmail(newProject);
- 
+
             alert("Project created successfully!");
         } else {
             alert('Please check all the fields.');
         }
     };
- 
+
     const validateForm = () => {
         const {
             projectName,
@@ -319,7 +359,7 @@ function Project() {
             startDate,
             endDate
         } = projectData;
- 
+
         const isProjectNameValid = projectName.trim() !== "" && !errors.projectNameError;
         const isProjectIdValid = projectId.trim() !== "" && !errors.projectIdError;
         const isDepartmentValid = department.trim() !== "" && !errors.departmentError;
@@ -335,18 +375,18 @@ function Project() {
             isStartValid &&
             isEndValid
         );
- 
+
     };
- 
- 
- 
+
+
+
     // Function to render the appropriate component based on displayedComponent state
     const renderComponent = () => {
         switch (displayedComponent) {
             case "CreateProject":
                 return (
                     <div className="create-project-container">
- 
+
                         {/* Your code for Create Project component */}
                         {/* ... */}
                         <h1 className="create-project-title">Create Project</h1>
@@ -433,19 +473,19 @@ function Project() {
                             {errors.skillsError && <p className="error-message">{errors.skillsError}</p>}
                         </label>
                         {/* ... */}
- 
+
                         <div className="chips-container">
                             {projectData.skillsRequired.map((skill, index) => (
                                 <div key={index} className="chip">
                                     <span>{skill}</span>
                                     <button onClick={handleDeleteSkill(skill)} className="delete-chip-button">x</button>
                                 </div>
- 
+
                             ))}
                         </div>
                         <br />
                         <button onClick={handleCreateProject} className="create-button unique-create-button">Create Project</button>
- 
+
                     </div>
                 ); case "ListOfProjects":
                 return (
@@ -487,7 +527,7 @@ function Project() {
                                                 project.projectName
                                             )}
                                         </td>
- 
+
                                         {/* Editable columns */}
                                         <td>
                                             {editingIndex === index ? (
@@ -544,7 +584,7 @@ function Project() {
                                                 project.skillsRequired.join(", ")
                                             )}
                                         </td>
- 
+
                                         {/* Edit button */}
                                         <td>
                                             {editingIndex === index ? (
@@ -559,7 +599,7 @@ function Project() {
                         </table>
                     </div>
                 );
- 
+
             default: return null
             // return (
             //     <div className="list-of-projects-container">
@@ -605,14 +645,14 @@ function Project() {
             //                     </tr>
             //                 ))}
             //             </tbody>
- 
+
             //         </table>
             //     </div>
             // );
         }
     };
- 
- 
+
+
     // Return JSX for the Project component
     return (
         <div className="project-wrapper">
@@ -622,10 +662,10 @@ function Project() {
                 <button onClick={showListOfProjects} className="list-of-projects-button unique-list-of-projects-button">List of Projects</button>
             </div>
             {/* Component container to render the appropriate component */}
- 
+
             <div className="component-container"> {renderComponent()}</div>
         </div>
     );
 }
- 
+
 export default Project;

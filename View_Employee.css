@@ -1,46 +1,69 @@
 .emp-management-container {
-    margin: 20px;
-  }
- 
-  .emp-management-title {
-    font-size: 24px;
-    margin-bottom: 10px;
-  }
- 
-  .emp-management-buttons {
-    margin-bottom: 10px;
-  }
- 
-  .emp-management-buttons button {
-    margin-right: 10px;
-    padding: 8px 16px;
-    font-size: 16px;
-    cursor: pointer;
-  }
- 
-  .emp-management-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
- 
-  .emp-management-table th,
-  .emp-management-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
- 
-  .emp-management-table th {
-    background-color: #f2f2f2;
-  }
- 
-  .emp-management-table input {
-    margin-left: 8px;
-  }
- 
-  .error-message {
-    color: red;
-  }
- 
-  /* Add more styles as needed */
- 
+  margin: 20px;
+}
+
+.emp-management-title {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.emp-management-buttons {
+  margin-bottom: 10px;
+}
+
+.emp-management-buttons button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.emp-management-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.emp-management-table th,
+.emp-management-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.emp-management-table th {
+  background-color: #f2f2f2;
+}
+
+.emp-management-table input {
+  margin-left: 8px;
+}
+
+.error-message {
+  color: red;
+}
+
+/* Add more styles as needed */
+
+/* Success message popup */
+.message-popup.success {
+background-color: rgba(94, 186, 125, 0.8); /* Semi-transparent green background color */
+color: #ffffff; /* White text color */
+box-shadow: 0 0 10px rgba(94, 186, 125, 0.5); /* Green shadow */
+position: fixed; /* Fixed positioning */
+top: 70px; /* Distance from top */
+right: 20px; /* Distance from right */
+padding: 10px; /* Padding around the text */
+border-radius: 0 40px 0 40px ;
+}
+
+/* Error message popup */
+.message-popup.error {
+background-color: rgba(244, 67, 54, 0.8); /* Semi-transparent red background color */
+color: #ffffff; /* White text color */
+box-shadow: 0 0 10px rgba(244, 67, 54, 0.5); /* Red shadow */
+position: fixed; /* Fixed positioning */
+top: 70px; /* Distance from top */
+right: 20px; /* Distance from right */
+padding: 10px; /* Padding around the text */
+border-radius:  40px 0 40px 0;
+}

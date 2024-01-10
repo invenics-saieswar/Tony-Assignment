@@ -1,5 +1,5 @@
 /* Project.css */
- 
+
 /* Centering the form on the page */
 .project-wrapper {
   display: flex;
@@ -9,7 +9,7 @@
   height: 100vh;
   overflow: auto;
 }
- 
+
 /* Styles for the form container */
 .create-project-container {
   background-color: #f1f1f1;
@@ -20,21 +20,21 @@
   overflow: auto; /* Hide any potential overflow */
   margin-top: 50px; /* Space from top */
 }
- 
+
 /* Styles for the form title */
 .create-project-title {
   text-align: center;
   margin-bottom: 15px; /* Reduced margin */
   font-size: 24px;
 }
- 
+
 /* Styles for the input container */
 .input-container {
   display: flex;
   flex-direction: column; /* Align inputs in a column */
   margin-bottom: 15px; /* Increased space between inputs */
 }
- 
+
 /* Styles for the input labels */
 label {
   font-weight: bold;
@@ -42,7 +42,7 @@ label {
   align-items: center;
   margin-bottom: 10px;
 }
- 
+
 /* Styles for the input fields */
 input[type="text"],
 input[type="date"],
@@ -54,7 +54,7 @@ input.department-input {
   border-radius: 4px;
   box-sizing: border-box;
 }
- 
+
 /* Style for the "Create Project" input */
 input.create-project-input {
   width: calc(100% - 16px); /* Full width with spacing */
@@ -68,19 +68,19 @@ input.create-project-input {
   transition: border-color 0.3s ease, color 0.3s ease,
     background-color 0.3s ease;
 }
- 
+
 input.create-project-input:focus {
   outline: none;
   border-color: #357ae8; /* Adjusted border color on focus */
 }
- 
+
 /* Styles for the buttons container */
 .button-container {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
- 
+
 /* Styles for the create project button */
 .create-project-button {
   padding: 12px 24px; /* Different padding */
@@ -91,12 +91,12 @@ input.create-project-input:focus {
   color: #4285f4;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
- 
+
 .create-project-button:hover {
   background-color: #4285f4;
   color: white;
 }
- 
+
 /* Styles for the list of projects button */
 .list-of-projects-button {
   padding: 12px 24px; /* Different padding */
@@ -107,12 +107,12 @@ input.create-project-input:focus {
   color: #0f9d58;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
- 
+
 .list-of-projects-button:hover {
   background-color: #0f9d58;
   color: white;
 }
- 
+
 .create-button {
   padding: 12px 24px; /* Different padding */
   margin: 0 10px;
@@ -122,12 +122,12 @@ input.create-project-input:focus {
   color: white;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
- 
+
 /* Styles for the list of projects container */
 .list-of-projects-container {
   margin-top: 50px;
 }
- 
+
 /* Styles for the table */
 .projects-table {
   width: 100%;
@@ -136,7 +136,7 @@ input.create-project-input:focus {
   overflow: hidden;
   margin-top: 20px;
 }
- 
+
 /* Styles for the table header */
 .projects-table th {
   background-color: #4285f4;
@@ -145,13 +145,13 @@ input.create-project-input:focus {
   padding: 12px;
   text-align: left;
 }
- 
+
 /* Styles for the table body */
 .projects-table td {
   padding: 12px;
   border-bottom: 1px solid whitesmoke;
 }
- 
+
 /* Styles for the Department dropdown */
 .department-input {
   width: calc(100% - 16px); /* Full width with spacing */
@@ -161,14 +161,14 @@ input.create-project-input:focus {
   border-radius: 4px;
   box-sizing: border-box;
 }
- 
+
 .department-input:focus {
   outline: none;
   border-color: #357ae8; /* Adjusted border color on focus */
 }
- 
+
 /* ... (your existing CSS code) */
- 
+
 /* Styles for the edit project button */
 .edit-project-button {
   padding: 8px 16px; /* Adjusted padding */
@@ -179,14 +179,14 @@ input.create-project-input:focus {
   color: #0f9d58;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
- 
+
 .edit-project-button:hover {
   background-color: #0f9d58;
   color: white;
 }
- 
+
 /* ... (your existing CSS code) */
- 
+
 /* Styles for the delete selected button */
 .delete-selected-button {
   padding: 12px 24px; /* Different padding */
@@ -196,12 +196,12 @@ input.create-project-input:focus {
   background-color: transparent;
   color: #ea4335;
 }
- 
+
 .delete-selected-button:hover {
   background-color: #ea4335;
   color: white;
 }
- 
+
 /* Add this CSS to your Project.css file or your preferred CSS file */
 .save-project-button {
   padding: 8px 16px;
@@ -214,7 +214,7 @@ input.create-project-input:focus {
   text-align: center;
   text-decoration: none;
 }
- 
+
 .save-project-button:hover {
   background-color: #45a049;
 }

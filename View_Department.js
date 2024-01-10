@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './ViewDepartment.css';
+import './View_Department.css';
 
-function ViewDepartment() {
+function View_Department() {
   const [departmentData, setDepartmentData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [editDepartment, setEditDepartment] = useState(null);
@@ -160,4 +160,4 @@ function ViewDepartment() {
   );
 }
 
-export default ViewDepartment;
+export default  View_Department;
