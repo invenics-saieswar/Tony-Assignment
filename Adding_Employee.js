@@ -1,6 +1,6 @@
-//-----------------------------------
-import React, { useState ,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Adding_Employee.css';
+import {useNotification } from './NotificationContext'
 
 function Adding_Employee() {
   const [employeeData, setEmployeeData] = useState({
@@ -14,12 +14,17 @@ function Adding_Employee() {
   const [idError, setIdError] = useState('');
   const [formError, setFormError] = useState('');
   const [departmentOptions, setDepartmentOptions] = useState([]);
- 
 
-   // State for managing success and error messages
-   const [showSuccessMessages, setShowSuccessMessages] = useState(false);
-   const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+  // State for managing success and error messages
+  const [showSuccessMessages, setShowSuccessMessages] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+  const{addNotification}=useNotification();
+
+
   
+
 
   const roles = ['Director', 'Manager', 'Analyst'];
 
@@ -32,7 +37,7 @@ function Adding_Employee() {
       })
       .catch((error) => console.error('Error fetching department dropdown data:', error));
   }, []);
- 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEmployeeData((prevData) => ({
@@ -124,17 +129,13 @@ function Adding_Employee() {
       if (response.ok) {
         console.log('Email sent successfully!');
         showSuccess();
-        // Display success message  inside try
-       // addNotification(`Employee added: ${employeeData.name}. Mail sent successfully!`, 'success');
       } else {
         console.error('Failed to send email.');
-       // addNotification('Failed to send mail', 'error');
+        showError();
       }
     } catch (error) {
       console.error('Error sending email:', error);
-     // addNotification('Failed to send mail', 'error');
-     showError();
-     // Display error message inside catch
+      showError();
     }
 
     setShowSuccessMessages(true);
@@ -151,27 +152,27 @@ function Adding_Employee() {
     setFormError('');
   };
 
-    // Function to display success message
-    const showSuccess = () => {
-      setShowSuccessMessage(true);
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-      }, 3000); // Hide success message after 3 seconds
-    };
-   
-    // Function to display error message
-    const showError = () => {
-      setShowErrorMessage(true);
-      setTimeout(() => {
-        setShowErrorMessage(false);
-      }, 3000); // Hide error message after 3 seconds
-    };
+  // Function to display success message
+  const showSuccess = () => {
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000); // Hide success message after 3 seconds
+  };
+
+  // Function to display error message
+  const showError = () => {
+    setShowErrorMessage(true);
+    setTimeout(() => {
+      setShowErrorMessage(false);
+    }, 3000); // Hide error message after 3 seconds
+  };
+  
 
   return (
     <div className="emp-add-container">
       <h2 className="emp-add-title">Add Employee Details</h2>
       <form onSubmit={handleSubmit} className="emp-add-form">
-        {/* Existing form elements and JSX */}
         {formError && <p className="error-message">{formError}</p>}
         <div className="emp-add-input-group">
           <label className="emp-add-label">Employee ID:</label>
@@ -224,35 +225,34 @@ function Adding_Employee() {
             required
           >
             <option value="">Select Department</option>
-            {departmentOptions.map((department) => (
-              <option key={department.dept_id} value={department.dept_name}>
-                {department.dept_name}
-              </option>
-            ))}
+            {departmentOptions.length > 0 &&
+              departmentOptions.map((department) => (
+                <option key={department.dept_id} value={department.dept_name}>
+                  {department.dept_name}
+                </option>
+              ))}
           </select>
         </div>
- 
+
         <br />
 
         <button type="submit" className="emp-add-button-submit">
           Add Employee
         </button>
       </form>
-      {/* Success and error messages */}
       {showSuccessMessages && (
         <div className="emp-add-success-message">Employee details added successfully!</div>
       )}
-       {showSuccessMessage && (
-          <div className="message-popup success">
-            <p>Email sent successfully!</p>
-          </div>
-        )}
- 
-        {showErrorMessage && (
-          <div className="message-popup error">
-            <p>Failed to send email.</p>
-          </div>
-        )}
+      {showSuccessMessage && (
+        <div className="message-popup success">
+          <p>Email sent successfully!</p>
+        </div>
+      )}
+      {showErrorMessage && (
+        <div className="message-popup error">
+          <p>Failed to send email.</p>
+        </div>
+      )}
     </div>
   );
 }
